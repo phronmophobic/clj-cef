@@ -63,7 +63,7 @@ clang++ \
     -framework Foundation \
     -mmacosx-version-min=10.11 \
     '/Volumes/My Passport for Mac/backup/cef/cef_binary_88.1.6+g4fe33a1+chromium-88.0.4324.96_macosx64/build/libcef_dll_wrapper/Debug/libcef_dll_wrapper.a' \
-    '/Volumes/My Passport for Mac/backup/cef/cef_binary_88.1.6+g4fe33a1+chromium-88.0.4324.96_macosx64/Release/cef_sandbox.a' \
+    '/Volumes/My Passport for Mac/backup/cef/cef_binary_88.1.6+g4fe33a1+chromium-88.0.4324.96_macosx64/Debug/cef_sandbox.a' \
     -std=c++17 \
     -DHELPER \
     -o 'ceftest Helper' \

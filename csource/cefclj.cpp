@@ -31,7 +31,7 @@ void log(const char* s){
 #include "include/cef_sandbox_mac.h"
 #endif
 
-#include "capi.cpp"
+#include "capi-wrappers.h"
 
 
 namespace {
@@ -328,202 +328,6 @@ void SimpleRenderHandler::OnPaint(CefRefPtr<CefBrowser> browser,
 
 extern "C"{
 
-    cef_main_args_t* cef_main_args_t_create(){
-        return new cef_main_args_t();
-    }
-    void cef_main_args_t_destroy(cef_main_args_t* self){
-        delete self;
-    }
-
-
-    cef_settings_t* cef_settings_t_create(){
-        cef_settings_t* settings = new cef_settings_t();
-        settings->size = sizeof(cef_settings_t);
-        return settings;
-    }
-    void cef_settings_t_destroy(cef_settings_t *settings){
-        delete settings;
-    }
-
-    // cef_color_t background_color;
-    // cef_log_severity_t log_severity;
-    void cef_settings_t_set_accept_language_list(cef_settings_t *settings, const char* s){
-        //cef_string_t accept_language_list;
-        CefString(&settings->accept_language_list).FromASCII(s);
-    }
-    void cef_settings_t_set_application_client_id_for_file_scanning(cef_settings_t *settings,const char* s){
-        //cef_string_t application_client_id_for_file_scanning;
-        CefString(&settings->application_client_id_for_file_scanning).FromASCII(s);
-    }
-    void cef_settings_t_set_browser_subprocess_path(cef_settings_t *settings,const char* s){
-        //cef_string_t browser_subprocess_path;
-        CefString(&settings->browser_subprocess_path).FromASCII(s);
-    }
-    void cef_settings_t_set_cache_path(cef_settings_t *settings,const char* s){
-        //cef_string_t cache_path;
-        CefString(&settings->cache_path).FromASCII(s);
-    }
-
-    void cef_settings_t_set_framework_dir_path(cef_settings_t *settings,const char* s){
-        CefString(&settings->framework_dir_path).FromASCII(s);
-    }
-    void cef_settings_t_set_javascript_flags(cef_settings_t *settings,const char* s){
-        //cef_string_t javascript_flags;
-        CefString(&settings->javascript_flags).FromASCII(s);
-    }
-    void cef_settings_t_set_locale(cef_settings_t *settings,const char* s){
-        //cef_string_t locale;
-        CefString(&settings->locale).FromASCII(s);
-    }
-    void cef_settings_t_set_locales_dir_path(cef_settings_t *settings,const char* s){
-        //cef_string_t locales_dir_path;
-        CefString(&settings->locales_dir_path).FromASCII(s);
-    }
-    void cef_settings_t_set_log_file(cef_settings_t *settings,const char* s){
-        //cef_string_t log_file;
-        CefString(&settings->log_file).FromASCII(s);
-    }
-    void cef_settings_t_set_main_bundle_path(cef_settings_t *settings,const char* s){
-        //cef_string_t main_bundle_path;
-        CefString(&settings->main_bundle_path).FromASCII(s);
-    }
-    void cef_settings_t_set_product_version(cef_settings_t *settings,const char* s){
-        //cef_string_t product_version;
-        CefString(&settings->product_version).FromASCII(s);
-    }
-    void cef_settings_t_set_resources_dir_path(cef_settings_t *settings,const char* s){
-        //cef_string_t resources_dir_path;
-        CefString(&settings->resources_dir_path).FromASCII(s);
-    }
-    void cef_settings_t_set_root_cache_path(cef_settings_t *settings,const char* s){
-        //cef_string_t root_cache_path;
-        CefString(&settings->root_cache_path).FromASCII(s);
-    }
-    void cef_settings_t_set_user_agent(cef_settings_t *settings,const char* s){
-        //cef_string_t user_agent;
-        CefString(&settings->user_agent).FromASCII(s);
-    }
-    void cef_settings_t_set_user_data_path(cef_settings_t *settings,const char* s){
-        //cef_string_t user_data_path;
-        CefString(&settings->user_data_path).FromASCII(s);
-    }
-    void cef_settings_t_set_chrome_runtime(cef_settings_t *settings,int i){
-        //int chrome_runtime;
-        settings->chrome_runtime = i;
-    }
-    void cef_settings_t_set_command_line_args_disabled(cef_settings_t *settings,int i){
-        //int command_line_args_disabled;
-        settings->command_line_args_disabled = i;
-    }
-    void cef_settings_t_set_external_message_pump(cef_settings_t *settings,int i){
-        //int external_message_pump;
-        settings->external_message_pump = i;
-    }
-    void cef_settings_t_set_ignore_certificate_errors(cef_settings_t *settings,int i){
-        //cef_settings_t *settings,int ignore_certificate_errors;
-        settings->ignore_certificate_errors = i;
-    }
-    void cef_settings_t_set_multi_threaded_message_loop(cef_settings_t *settings,int i){
-        //int multi_threaded_message_loop;
-        settings->multi_threaded_message_loop = i;
-    }
-    void cef_settings_t_set_no_sandbox(cef_settings_t *settings,int i){
-        //int no_sandbox;
-        settings->no_sandbox = i;
-    }
-    void cef_settings_t_set_pack_loading_disabled(cef_settings_t *settings,int i){
-        //int pack_loading_disabled;
-        settings->pack_loading_disabled = i;
-    }
-    void cef_settings_t_set_persist_session_cookies(cef_settings_t *settings,int i){
-        //int persist_session_cookies;
-        settings->persist_session_cookies = i;
-    }
-    void cef_settings_t_set_persist_user_preferences(cef_settings_t *settings,int i){
-        //int persist_user_preferences;
-        settings->persist_user_preferences = i;
-    }
-    void cef_settings_t_set_remote_debugging_port(cef_settings_t *settings,int i){
-        //int remote_debugging_port;
-        settings->remote_debugging_port = i;
-    }
-    void cef_settings_t_set_uncaught_exception_stack_size(cef_settings_t *settings,int i){
-        //int uncaught_exception_stack_size;
-        settings->uncaught_exception_stack_size = i;
-    }
-    void cef_settings_t_set_windowless_rendering_enabled(cef_settings_t *settings,int i){
-        //int windowless_rendering_enabled;
-        settings->windowless_rendering_enabled = i;
-    }
-
-
-    // browser _settings
-  // cef_color_t background_color;
-  // cef_state_t application_cache;
-  // cef_state_t databases;
-  // cef_state_t file_access_from_file_urls;
-  // cef_state_t image_loading;
-  // cef_state_t image_shrink_standalone_to_fit;
-  // cef_state_t javascript;
-  // cef_state_t javascript_access_clipboard;
-  // cef_state_t javascript_close_windows;
-  // cef_state_t javascript_dom_paste;
-  // cef_state_t local_storage;
-  // cef_state_t plugins;
-  // cef_state_t remote_fonts;
-  // cef_state_t tab_to_links;
-  // cef_state_t text_area_resize;
-  // cef_state_t universal_access_from_file_urls;
-  // cef_state_t web_security;
-  // cef_state_t webgl;
-
-    cef_browser_settings_t* cef_browser_settings_t_create(){
-        cef_browser_settings_t* settings = new cef_browser_settings_t();
-        settings->size = sizeof(cef_browser_settings_t);
-        return settings;
-    }
-    void cef_browser_settings_t_destroy(cef_browser_settings_t *settings){
-        delete settings;
-    }
-void cef_browser_settings_t_set_accept_language_list(cef_browser_settings_t *settings,const char* s){
-    CefString(&settings->accept_language_list).FromASCII(s);
-}
-void cef_browser_settings_t_set_cursive_font_family(cef_browser_settings_t *settings,const char* s){
-    CefString(&settings->cursive_font_family).FromASCII(s);
-}
-void cef_browser_settings_t_set_default_encoding(cef_browser_settings_t *settings,const char* s){
-    CefString(&settings->default_encoding).FromASCII(s);
-}
-void cef_browser_settings_t_set_fantasy_font_family(cef_browser_settings_t *settings,const char* s){
-    CefString(&settings->fantasy_font_family).FromASCII(s);
-}
-void cef_browser_settings_t_set_fixed_font_family(cef_browser_settings_t *settings,const char* s){
-    CefString(&settings->fixed_font_family).FromASCII(s);
-}
-void cef_browser_settings_t_set_sans_serif_font_family(cef_browser_settings_t *settings,const char* s){
-    CefString(&settings->sans_serif_font_family).FromASCII(s);
-}
-void cef_browser_settings_t_set_serif_font_family(cef_browser_settings_t *settings,const char* s){
-    CefString(&settings->serif_font_family).FromASCII(s);
-}
-void cef_browser_settings_t_set_standard_font_family(cef_browser_settings_t *settings,const char* s){
-    CefString(&settings->standard_font_family).FromASCII(s);
-}
-void cef_browser_settings_t_set_default_fixed_font_size(cef_browser_settings_t *settings, int i){
-    settings->default_fixed_font_size = i;
-}
-void cef_browser_settings_t_set_default_font_size(cef_browser_settings_t *settings, int i){
-    settings->default_font_size = i;
-}
-void cef_browser_settings_t_set_minimum_font_size(cef_browser_settings_t *settings, int i){
-    settings->minimum_font_size = i;
-}
-void cef_browser_settings_t_set_minimum_logical_font_size(cef_browser_settings_t *settings, int i){
-    settings->minimum_logical_font_size = i;
-}
-void cef_browser_settings_t_set_windowless_frame_rate(cef_browser_settings_t *settings, int i){
-    settings->windowless_frame_rate = i;
-}
 
     cef_string_t* cef_string_t_create(){
         return new cef_string_t();
@@ -532,28 +336,8 @@ void cef_browser_settings_t_set_windowless_frame_rate(cef_browser_settings_t *se
         delete s;
     }
 
-    cef_window_info_t* cef_window_info_t_create(){
-        return new cef_window_info_t();
-    }
-    void cef_window_info_t_destroy(cef_window_info_t* s){
-        delete s;
-    }
-
     int _cef_load_library(const char* path){
         return cef_load_library(path);
-    }
-
-    void cef_rect_t_set_x(cef_rect_t* self, int i){
-        self->x = i;
-    }
-    void cef_rect_t_set_y(cef_rect_t* self, int i){
-        self->y = i;
-    }
-    void cef_rect_t_set_width(cef_rect_t* self, int i){
-        self->width = i;
-    }
-    void cef_rect_t_set_height(cef_rect_t* self, int i){
-        self->height = i;
     }
 
 
@@ -616,13 +400,16 @@ void cef_browser_settings_t_set_windowless_frame_rate(cef_browser_settings_t *se
   // if (!library_loader.LoadInMain())
   //   return 1;
 
-  // if (!cef_load_library("/Users/adrian/workspace/clj-cef/csource/ceftest.app/Contents/Frameworks/Chromium Embedded Framework.framework/Chromium Embedded Framework")) {
-        if (!cef_load_library("/Volumes/My Passport for Mac/backup/cef/cef_binary_88.1.6+g4fe33a1+chromium-88.0.4324.96_macosx64/Release/Chromium Embedded Framework.framework/Chromium Embedded Framework")) {
+  if (!cef_load_library("/Users/adrian/workspace/clj-cef/csource/ceftest.app/Contents/Frameworks/Chromium Embedded Framework.framework/Chromium Embedded Framework")) {
+        // if (!cef_load_library("/Volumes/My Passport for Mac/backup/cef/cef_binary_88.1.6+g4fe33a1+chromium-88.0.4324.96_macosx64/Release/Chromium Embedded Framework.framework/Chromium Embedded Framework")) {
+        // if (!cef_load_library("/Volumes/My Passport for Mac/backup/cef/cef_binary_88.1.6+g4fe33a1+chromium-88.0.4324.96_macosx64/build/tests/cefsimple/Debug/cefsimple.app/Contents/Frameworks/Chromium Embedded Framework.framework/Chromium Embedded Framework")) {
 
             fprintf(stderr, "Failed to load the CEF framework.\n");
             return 1;
         }
 
+
+        log("loaded");
 
   // Structure for passing command-line arguments.
   // The definition of this structure is platform-specific.
@@ -632,25 +419,33 @@ void cef_browser_settings_t_set_windowless_frame_rate(cef_browser_settings_t *se
   CefRefPtr<SimpleApp> app(new SimpleApp(render_handler));
 
 
-  cef_settings_t* csettings = cef_settings_t_create();
-  char s[]= "Asdasdf";
+  // cef_settings_t* csettings = cef_settings_t_create();
+  // char s[]= "Asdasdf";
   /* cef_string_ascii_to_utf16(s, strlen(s), &csettings->framework_dir_path); */
-  cef_settings_t_set_framework_dir_path(csettings, "Asdfasdf");
+  // cef_settings_t_set_framework_dir_path(csettings, "Asdfasdf");
   
 
   // Populate this structure to customize CEF behavior.
   CefSettings settings;
 
-  settings.no_sandbox = true;
+  settings.no_sandbox = false;
   settings.windowless_rendering_enabled = true;
 
-  CefString(&settings.framework_dir_path).FromASCII("/Volumes/My Passport for Mac/backup/cef/cef_binary_88.1.6+g4fe33a1+chromium-88.0.4324.96_macosx64/Release/Chromium Embedded Framework.framework/");
+  // CefString(&settings.framework_dir_path).FromASCII("/Volumes/My Passport for Mac/backup/cef/cef_binary_88.1.6+g4fe33a1+chromium-88.0.4324.96_macosx64/Debug/Chromium Embedded Framework.framework/");
+  // CefString(&settings.framework_dir_path).FromASCII("/Volumes/My Passport for Mac/backup/cef/cef_binary_88.1.6+g4fe33a1+chromium-88.0.4324.96_macosx64/build/tests/cefsimple/Debug/cefsimple.app/Contents/Frameworks/Chromium Embedded Framework.framework/");
+  CefString(&settings.framework_dir_path).FromASCII("/Users/adrian/workspace/clj-cef/csource/Contents/Frameworks/Chromium Embedded Framework.framework/");
 
   // Specify the path for the sub-process executable.
   CefString(&settings.browser_subprocess_path).FromASCII("/Users/adrian/workspace/clj-cef/csource/ceftest Helper");
 
+  // CefString(&settings.browser_subprocess_path).FromASCII("/Volumes/My Passport for Mac/backup/cef/cef_binary_88.1.6+g4fe33a1+chromium-88.0.4324.96_macosx64/build/tests/cefsimple/Debug/cefsimple.app/Contents/Frameworks/cefsimple Helper.app/Contents/MacOS/cefsimple Helper");
+
+
+
   CefString(&settings.main_bundle_path).FromASCII("/Users/adrian/workspace/clj-cef/");
 
+
+  log("initializing");
 
   // #if defined(OS_POSIX)
   // CefInitialize will reset signal handlers. Backup/restore the original
@@ -687,7 +482,7 @@ void cef_browser_settings_t_set_windowless_frame_rate(cef_browser_settings_t *se
 #if defined(TEST)
 int main(int argc, char* argv[]) {
 
-    return start(NULL);
+    return start2(NULL);
 }
 #endif
 
@@ -697,26 +492,39 @@ int main(int argc, char* argv[]) {
     int main(int argc, char* argv[]) {
 
 
+        // {
+        //     FILE *fp = fopen("/tmp/test.txt", "w+");
+        //     for (int i = 0; i < argc; i ++){
+        //         fprintf(fp, " \"%s\" " ,argv[i]); 
+        //     }
+        // fclose(fp);
+        // log("");
+        // }
 
-        for (int i = 0; i < argc; i ++){
-            FILE *fp = fopen("/tmp/test.txt", "w+");fprintf(fp, "arg %d: %s\n" ,i, argv[i]); fclose(fp);
-        }
-
+        
+        // log("trying to sandbox");
         // Initialize the macOS sandbox for this helper process.
         CefScopedSandboxContext sandbox_context;
-        if (!sandbox_context.Initialize(argc, argv))
+        if (!sandbox_context.Initialize(argc, argv)){
+            // FILE *fp = fopen("/tmp/test.txt", "w+");fprintf(fp, "sandbox failing to initialize...\n"); fclose(fp);
             return 1;
+        }
+        // log("sandbox complete!");
 
-        FILE *fp = fopen("/tmp/test.txt", "w+");fprintf(fp, "still running helper...\n"); fclose(fp);
+
+        // log( "still running helper...\n"); 
 
 
-        if (!cef_load_library("/Volumes/My Passport for Mac/backup/cef/cef_binary_88.1.6+g4fe33a1+chromium-88.0.4324.96_macosx64/Release/Chromium Embedded Framework.framework/Chromium Embedded Framework")) {
+        if (!cef_load_library("/Users/adrian/workspace/clj-cef/csource/ceftest.app/Contents/Frameworks/Chromium Embedded Framework.framework/Chromium Embedded Framework")) {
+        // if (!cef_load_library("/Volumes/My Passport for Mac/backup/cef/cef_binary_88.1.6+g4fe33a1+chromium-88.0.4324.96_macosx64/Release/Chromium Embedded Framework.framework/Chromium Embedded Framework")) {
 
-        FILE *fp = fopen("/tmp/test.txt", "w+");fprintf(fp, "failed to load cef framework...\n"); fclose(fp);
+        // FILE *fp = fopen("/tmp/test.txt", "w+");fprintf(fp, "failed to load cef framework...\n"); fclose(fp);
 
             fprintf(stderr, "Failed to load the CEF framework.\n");
             return 1;
         }
+
+
 
         // Load the CEF framework library at runtime instead of linking directly
         // as required by the macOS sandbox implementation.
