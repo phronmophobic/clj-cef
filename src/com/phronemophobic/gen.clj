@@ -51,13 +51,19 @@
     "short"
     "size_t"
     "uint32"
+    "uint64"
+    "wchar_t"
+    "const float"
+    "const char"
+    "char16"
+    "int32"
+    "int64"
     ["void"]
     "char"})
 
 (defn simple-type? [ptype]
   (or (simple-types ptype)
-      (and (vector? ptype)
-           (simple-type? (first ptype)))))
+      (vector? ptype)))
 
 
 (defn type->str [ptype]
@@ -66,20 +72,40 @@
     (= ["void"] ptype)
     "void*"
 
+    (= "void" ptype)
+    "void"
+
+    (= "const void" ptype)
+    "const void"
+
     (vector? ptype)
-     (str (type->str (first ptype)) "*")
-
-     (simple-type? ptype)
-     ptype
+    (str (type->str (first ptype)) "*")
 
 
+    (simple-type? ptype)
+    ptype
 
-     (map? ptype)
-     
-     (get ptype "decl")
 
-     :else
-     (str "uhoh " ptype)))
+
+    (map? ptype)
+    (get ptype "decl")
+
+    (.startsWith ptype "struct ")
+    ptype
+
+    (.startsWith ptype "const struct ")
+    ptype
+
+    (and (.startsWith ptype "cef_")
+         (.endsWith ptype "_t"))
+    ptype
+
+    (and (.startsWith ptype "const cef_")
+         (.endsWith ptype "_t"))
+    ptype
+
+    :else
+    (throw (Exception. (str "can't convert type to string, " ptype)))))
 
 
 
@@ -93,7 +119,8 @@
     (get ptype "name")
 
     :else
-    (str "uhoh " ptype)))
+    (throw (Exception. (str "can't convert type to binding, " ptype)))
+    ))
 
 (defn type->arg [ptype]
   (cond
@@ -105,15 +132,36 @@
     (get ptype "decl")
 
     :else
-    (str "uhoh " ptype))
+    (throw (Exception. (str "can't convert type to arg, " ptype))))
   )
 
 (defn struct-getter [sname [pname ptype]]
-  (str
-   
-   (type->str ptype)
-   " "
-   sname "_get_" pname "(" sname "* s){ return s->"pname  "; }"))
+  (cond
+    (map? ptype)
+    (str
+     (type->str (get ptype "ret"))
+     " "
+     sname "_call_" pname "(" sname "* s, " (clojure.string/join
+                                             ", "
+                                             (map-indexed (fn [i arg-type]
+                                                            (str (type->str arg-type) " x" i))
+                                                          (get ptype "args"))) "){\n"
+
+     (when (not= "void" (get ptype "ret"))
+       "return ")
+     "s->" pname "(" (clojure.string/join "," (map-indexed (fn [i _] (str "x" i))
+                                                           (get ptype "args")))
+     ");"
+     "}"
+
+     )
+
+
+    :else
+    (str
+     (type->str ptype)
+     " "
+     sname "_get_" pname "(" sname "* s){ return s->"pname  "; }")))
 
 (defn struct-setter [sname [pname ptype]]
   (when (or (simple-type? ptype)
@@ -122,7 +170,6 @@
     (case ptype
       "cef_string_t"
       (str
-       
        "void"
        " "
        sname "_set_" pname "(" sname "* self, const char *s)"
@@ -132,7 +179,6 @@
 
       ;;else
       (str
-       
        "void"
        " "
        sname "_set_" pname "(" sname "* s, "
@@ -173,7 +219,8 @@
                           cat
                           (for [[pname ptype] (get struct "props")
                                 :when (not= "base" pname)]
-                            [(when (simple-type? ptype)
+                            [(when (or (simple-type? ptype)
+                                       (map? ptype))
                                (struct-getter sname [pname ptype]))
                              (struct-setter sname [pname ptype])]))))))
 
@@ -242,6 +289,7 @@
     "cef_drag_operations_mask_t" Integer/TYPE
     "cef_text_input_mode_t" Integer/TYPE
     "cef_paint_element_type_t" Integer/TYPE
+    "cef_string_list_t" Pointer
 
     ;; else
     (cond
@@ -292,7 +340,10 @@
     "char" `char
     "cef_string_t" `str
     ["char"] `str
-    
+
+    "cef_string_list_t" `(fn [x#]
+                           (assert (instance? Pointer x#))
+                           x#)
 
     ;; else
     (cond
@@ -301,7 +352,6 @@
            (= "fptr" (get type "type")))
       (coerce-callback type)
 
-      
       (vector? type)
       `(fn [x#]
          (assert (instance? Pointer x#))
@@ -320,24 +370,32 @@
 
   ,)
 (declare type->class)
-(defn def-struct-fns* [structs]
+(defn- def-struct-fn* [struct]
+  (let [sname (get struct "name")
+        create-name (symbol
+                     (str sname "_create"))
+        destroy-name (symbol
+                      (str sname "_destroy"))]
+    `(do
+       (defc ~create-name Pointer)
+       (defc ~destroy-name void [~'struct])
+       ~@(for [[pname ptype] (get struct "props")
+               :when (map? ptype)
+               :let [call-name (symbol
+                                (str sname "_call_" pname))]]
+           `(defc ~call-name void [~'self ~@(for [[i arg] (map-indexed vector (get ptype "args"))]
+                                              (symbol (str "x" i)))]))
+       ~@(for [[pname ptype] (get struct "props")
+               :when (or (simple-type? ptype)
+                         (= "cef_string_t" ptype)
+                         (map? ptype))
+               :let [set-name (symbol
+                               (str sname "_set_" pname))]]
+           `(defc ~set-name void [~'self ~'x])))))
+
+(defn- def-struct-fns* [structs]
   `(do
-      ~@(for [struct (vals structs)
-              :let [sname (get struct "name")
-                    create-name (symbol
-                                 (str sname "_create"))
-                    destroy-name (symbol
-                                  (str sname "_destroy"))]]
-          `(do
-             (defc ~create-name Pointer)
-             (defc ~destroy-name void [~'struct])
-             ~@(for [[pname ptype] (get struct "props")
-                     :when (or (simple-type? ptype)
-                               (= "cef_string_t" ptype)
-                               (map? ptype))
-                     :let [set-name (symbol
-                                     (str sname "_set_" pname))]]
-                 `(defc ~set-name void [~'self ~'x]))))))
+     ~@(map def-struct-fn* (vals structs))))
 
 (defmacro def-struct-fns
   ([]
@@ -364,7 +422,8 @@
                       "cef_text_input_mode_t"
                       "cef_paint_element_type_t"
 
-                      
+                      "cef_string_list_t"
+
                       "cef_string_t"}
                     ptype)
                    (vector? ptype)
@@ -419,6 +478,7 @@
                   (~set-name ~struct-sym
                    (~(coerce-type ptype) ~binding)))))
          ~'struct)
+
        (defn ~fname [{:keys [~@prop-keys] :as ~'m}]
          (let [~struct-sym (preserve!
                             (~(symbol
