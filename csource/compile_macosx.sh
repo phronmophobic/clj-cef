@@ -3,6 +3,9 @@
 set -e
 set -x
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+cd "$DIR"
+
 export SDKROOT="/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
 
     # -I ./libs/glfw-3.3.bin.MACOS/include \
@@ -68,6 +71,7 @@ clang++ \
     -DHELPER \
     -o 'ceftest Helper' \
     thirdparty/backupsignalhandlers/signal_restore_posix.cpp \
+    getdir.mm \
     cefclj.cpp
 
 
@@ -90,6 +94,7 @@ clang++ \
     -dynamiclib \
     -o libcljcef.dylib \
     thirdparty/backupsignalhandlers/signal_restore_posix.cpp \
+    getdir.mm \
     cefclj.cpp
 
 

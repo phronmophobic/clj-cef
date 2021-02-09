@@ -1,4 +1,4 @@
-{:paths ["src" "resources"]
+{:paths ["src" "resources" "classes"]
  :deps {org.clojure/clojure {:mvn/version "1.10.1"}
         net.java.dev.jna/jna {:mvn/version "5.6.0"}
         net.n01se/clojure-jna {:mvn/version "1.0.0"}

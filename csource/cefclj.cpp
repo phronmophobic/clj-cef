@@ -1,6 +1,5 @@
 #include "cefclj.h"
 
-
 #include <string>
 #include <sstream>
 
@@ -383,7 +382,7 @@ extern "C"{
         cef_settings_t_set_framework_dir_path(settings, "/Volumes/My Passport for Mac/backup/cef/cef_binary_88.1.6+g4fe33a1+chromium-88.0.4324.96_macosx64/Release/Chromium Embedded Framework.framework/");
         cef_settings_t_set_browser_subprocess_path(settings, "/Users/adrian/workspace/clj-cef/csource/ceftest Helper");
         cef_settings_t_set_main_bundle_path(settings, "/Users/adrian/workspace/clj-cef/");
-        cef_settings_t_set_no_sandbox(settings, true);
+        // cef_settings_t_set_no_sandbox(settings, true);
 
         cef_initialize( args, settings, app, NULL);
 
@@ -515,7 +514,7 @@ int main(int argc, char* argv[]) {
         // log( "still running helper...\n"); 
 
 
-        if (!cef_load_library("/Users/adrian/workspace/clj-cef/csource/ceftest.app/Contents/Frameworks/Chromium Embedded Framework.framework/Chromium Embedded Framework")) {
+        if (!cef_load_library("/Users/adrian/workspace/clj-cef/csource/Contents/Frameworks/Chromium Embedded Framework.framework/Chromium Embedded Framework")) {
         // if (!cef_load_library("/Volumes/My Passport for Mac/backup/cef/cef_binary_88.1.6+g4fe33a1+chromium-88.0.4324.96_macosx64/Release/Chromium Embedded Framework.framework/Chromium Embedded Framework")) {
 
         // FILE *fp = fopen("/tmp/test.txt", "w+");fprintf(fp, "failed to load cef framework...\n"); fclose(fp);

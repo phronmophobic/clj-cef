@@ -498,8 +498,8 @@
 (comment
   (gen-clj-structs))
 
-(def-struct-fns)
-(gen-clj-structs)
+;; (def-struct-fns)
+;; (gen-clj-structs)
 
 
 
