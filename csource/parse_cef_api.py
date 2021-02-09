@@ -169,7 +169,7 @@ if __name__ == '__main__':
 
     structs = {}
 
-    tu = index.parse('../csource/test.h', args = [
+    tu = index.parse('gen.h', args = [
         ''.join(['-I', base_path]),
         # ''.join(['-I', '/Users/adrian/workspace/clj-cef/csource']),
         # '-framework', 'OpenGL',
