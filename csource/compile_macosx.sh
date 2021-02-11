@@ -99,6 +99,6 @@ clang++ \
 
 
 cp libcljcef.dylib ../resources/darwin
-# cp libmembraneskia.dylib ../resources/darwin
+cp 'ceflib Helper' ../resources/darwin
 
 echo 'done'
