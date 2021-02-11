@@ -69,7 +69,7 @@ clang++ \
     '/Volumes/My Passport for Mac/backup/cef/cef_binary_88.1.6+g4fe33a1+chromium-88.0.4324.96_macosx64/Debug/cef_sandbox.a' \
     -std=c++17 \
     -DHELPER \
-    -o 'ceftest Helper' \
+    -o 'ceflib Helper' \
     thirdparty/backupsignalhandlers/signal_restore_posix.cpp \
     getdir.mm \
     cefclj.cpp
