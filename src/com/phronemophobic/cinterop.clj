@@ -1,4 +1,5 @@
 (ns com.phronemophobic.cinterop
+  "Utilities for interop with c."
   (:require [net.n01se.clojure-jna :as jna])
   (:import com.sun.jna.Pointer
            com.sun.jna.Memory
@@ -6,17 +7,17 @@
            com.sun.jna.ptr.IntByReference
            com.sun.jna.IntegerType))
 
-(def main-class-loader @clojure.lang.Compiler/LOADER)
-(def void Void/TYPE)
+(def ^:no-doc main-class-loader @clojure.lang.Compiler/LOADER)
+(def ^:no-doc void Void/TYPE)
 
-(def cljcef
+(def ^:no-doc cljcef
   (try
     (com.sun.jna.NativeLibrary/getInstance "cljcef")
     (catch java.lang.UnsatisfiedLinkError e
       nil)))
 
 
-(defmacro defc
+(defmacro ^:no-doc defc
   ([fn-name ret]
    `(defc ~fn-name ~ret []))
   ([fn-name ret args]
@@ -34,22 +35,27 @@
 
 
 
-(def objlib (try
-              (com.sun.jna.NativeLibrary/getInstance "CoreFoundation")
-              (catch UnsatisfiedLinkError e
-                nil)))
+(def ^:no-doc
+  objlib (try
+           (com.sun.jna.NativeLibrary/getInstance "CoreFoundation")
+           (catch UnsatisfiedLinkError e
+             nil)))
 
-(def main-queue (when objlib
-                  (.getGlobalVariableAddress ^com.sun.jna.NativeLibrary objlib "_dispatch_main_q")))
+(def ^:no-doc
+  main-queue (when objlib
+               (.getGlobalVariableAddress ^com.sun.jna.NativeLibrary objlib "_dispatch_main_q")))
 
-(def dispatch_sync (when objlib
-                     (.getFunction ^com.sun.jna.NativeLibrary objlib "dispatch_sync_f")))
-(def dispatch_async (when objlib
-                     (.getFunction ^com.sun.jna.NativeLibrary objlib "dispatch_async_f")))
+(def ^:no-doc
+  dispatch_sync (when objlib
+                  (.getFunction ^com.sun.jna.NativeLibrary objlib "dispatch_sync_f")))
+(def ^:no-doc
+  dispatch_async (when objlib
+                   (.getFunction ^com.sun.jna.NativeLibrary objlib "dispatch_async_f")))
 
-(defonce callbacks (atom []))
+(defonce ^:no-doc
+  callbacks (atom []))
 
-(deftype DispatchCallback [f]
+(deftype ^:no-doc DispatchCallback [f]
   com.sun.jna.CallbackProxy
   (getParameterTypes [_]
     (into-array Class  [Pointer]))
@@ -72,7 +78,9 @@
     ;; now that we're done
     (com.sun.jna.Native/detach true)))
 
-(defn dispatch-async [f]
+(defn dispatch-async
+  "Run `f` on the main thread. Will return immediately."
+  [f]
   (if (and main-queue dispatch_sync)
     (let [callback (DispatchCallback. f)
           args (to-array [main-queue nil callback])]
@@ -82,7 +90,9 @@
       nil)
     (f)))
 
-(defn dispatch-sync [f]
+(defn dispatch-sync
+  "Run `f` on the main thread. Waits for `f` to complete before returning."
+  [f]
   (if (and main-queue dispatch_sync)
     (let [callback (DispatchCallback. f)
           args (to-array [main-queue nil callback])]
@@ -93,10 +103,10 @@
     (f)))
 
 
-(defonce not-garbage
+(defonce ^:no-doc not-garbage
   (atom []))
 
-(defn preserve!
+(defn ^:no-doc preserve!
   "Store this value so it's not garbage collected"
   [x]
   (swap! not-garbage conj x)

@@ -1,4 +1,5 @@
 (ns com.phronemophobic.cef
+  "Clojure Wrappers for CEF"
   (:require [com.phronemophobic.gen2 :as gen2]
             [clojure.java.io :as io]
             [com.phronemophobic.cinterop :as cinterop
@@ -15,15 +16,19 @@
 (gen2/gen-wrappers)
 (gen2/gen-docs)
 
-(defonce prepared-environment (atom false))
+(defonce ^{:private true
+           :no-doc true}
+  prepared-environment (atom false))
 
-(def void Void/TYPE)
+(def ^:no-doc void Void/TYPE)
 
 (defc change_bundle_path void [bundle-path])
 
 (defc cef_string_wide_to_utf16 Integer/TYPE [wstr len cef-string])
 
-(defn cef-string [s]
+(defn cef-string
+  "Convert a java String into a CefString"
+  [s]
   (let [cef-str (preserve! (CefStringUtf16.))
         wstr (preserve! (WString. s))
         _ (cef_string_wide_to_utf16 wstr (.length wstr) cef-str)]
@@ -39,15 +44,32 @@
 
 
 (defc cef_run_message_loop void [])
-(defn cef-run-message-loop []
-  (assert @prepared-environment "Did you call prepare-environment! yet?")
+(defn cef-run-message-loop
+  "Run the event loop that drives the browser.
+
+  MUST be called from the main thread. The event loop will not stop on it's own.
+
+  Run the CEF message loop. Use this function instead of an application-
+  provided message loop to get the best balance between performance and CPU
+  usage. This function should only be called on the main application thread and
+  only if cef_initialize() is called with a
+  CefSettings.multi_threaded_message_loop value of false (0). This function
+  will block until a quit message is received by the system.
+
+  Typically, the way to stop the event loop is to call `(.closeBrowser (.getHost browser) 1)` and install a life span handler. The life span handler will receive a `:on-before-close-event` where it can check if the last browser is being closed and then call `cef-quit-message-loop`. See `map->life-span-handler` for more info."
+  []
+  (assert @prepared-environment "Did you call download-and-prepare-environment! yet?")
   (cef_run_message_loop))
 
 (defc cef_browser_host_create_browser void [window-info client url browser-settings extra-info request-context])
 
 (defn cef-browser-host-create-browser
   "Create a new browser window using the window parameters specified by
-  |windowInfo|. All values will be copied internally and the actual window will
+  |windowInfo|.
+
+  MUST be called on the main thread.
+
+  All values will be copied internally and the actual window will
   be created on the UI thread. If |request_context| is NULL the global request
   context will be used. This function can be called on any browser process
   thread and will not block. The optional |extra_info| parameter provides an
@@ -55,14 +77,15 @@
   will be passed to cef_render_process_handler_t::on_browser_created() in the
   render process."
   [window-info client url browser-settings extra-info request-context]
-  (assert @prepared-environment "Did you call prepare-environment! yet?")
+  (assert @prepared-environment "Did you call download-and-prepare-environment! yet?")
   (cef_browser_host_create_browser window-info client (when url (cef-string url)) browser-settings extra-info request-context))
 
 
 
 (defc cef_shutdown void [])
-(defn cef-shutdown []
-  (assert @prepared-environment "Did you call prepare-environment! yet?")
+(defn ^:no-doc cef-shutdown
+  []
+  (assert @prepared-environment "Did you call download-and-prepare-environment! yet?")
   (cef_shutdown))
 
 
@@ -84,13 +107,7 @@
 ;;                                    cef_app_t* application,
 ;;                                    void* windows_sandbox_info);
 
-;; ///
-;; // This function should be called on the main application thread to initialize
-;; // the CEF browser process. The |application| parameter may be NULL. A return
-;; // value of true (1) indicates that it succeeded and false (0) indicates that it
-;; // failed. The |windows_sandbox_info| parameter is only used on Windows and may
-;; // be NULL (see cef_sandbox_win.h for details).
-;; ///
+
 ;; CEF_EXPORT int cef_initialize(const struct _cef_main_args_t* args,
 ;;                               const struct _cef_settings_t* settings,
 ;;                               cef_app_t* application,
@@ -103,47 +120,51 @@
 ;; CEF_EXPORT void cef_shutdown();
 
 ;; ///
-;; // Perform a single iteration of CEF message loop processing. This function is
-;; // provided for cases where the CEF message loop must be integrated into an
-;; // existing application message loop. Use of this function is not recommended
-;; // for most users; use either the cef_run_message_loop() function or
-;; // CefSettings.multi_threaded_message_loop if possible. When using this function
-;; // care must be taken to balance performance against excessive CPU usage. It is
-;; // recommended to enable the CefSettings.external_message_pump option when using
-;; // this function so that
-;; // cef_browser_process_handler_t::on_schedule_message_pump_work() callbacks can
-;; // facilitate the scheduling process. This function should only be called on the
-;; // main application thread and only if cef_initialize() is called with a
-;; // CefSettings.multi_threaded_message_loop value of false (0). This function
-;; // will not block.
+
 ;; ///
 ;; CEF_EXPORT void cef_do_message_loop_work();
 
 (defc cef_do_message_loop_work void [])
-(defn cef-do-message-loop-work []
-  (assert @prepared-environment "Did you call prepare-environment! yet?")
+(defn cef-do-message-loop-work
+  "Perform a single iteration of CEF message loop processing.
+
+  MUST be called from the main thread.
+
+  This function is provided for cases where the CEF message loop must be integrated into an
+existing application message loop. Use of this function is not recommended
+for most users; use either the cef_run_message_loop() function or
+CefSettings.multi_threaded_message_loop if possible. When using this function
+care must be taken to balance performance against excessive CPU usage. It is
+recommended to enable the CefSettings.external_message_pump option when using
+this function so that
+cef_browser_process_handler_t::on_schedule_message_pump_work() callbacks can
+facilitate the scheduling process. This function should only be called on the
+main application thread and only if cef_initialize() is called with a
+CefSettings.multi_threaded_message_loop value of false (0). This function
+will not block."
+  []
+  (assert @prepared-environment "Did you call download-and-prepare-environment! yet?")
   (cef_do_message_loop_work))
 
 ;; ///
-;; // Run the CEF message loop. Use this function instead of an application-
-;; // provided message loop to get the best balance between performance and CPU
-;; // usage. This function should only be called on the main application thread and
-;; // only if cef_initialize() is called with a
-;; // CefSettings.multi_threaded_message_loop value of false (0). This function
-;; // will block until a quit message is received by the system.
+
 ;; ///
 ;; CEF_EXPORT void cef_run_message_loop();
 
 ;; ///
-;; // Quit the CEF message loop that was started by calling cef_run_message_loop().
-;; // This function should only be called on the main application thread and only
-;; // if cef_run_message_loop() was used.
 ;; ///
 ;; CEF_EXPORT void cef_quit_message_loop();
 
 (defc cef_quit_message_loop void [])
-(defn cef-quit-message-loop []
-  (assert @prepared-environment "Did you call prepare-environment! yet?")
+(defn cef-quit-message-loop
+  "Quit the CEF message loop that was started by calling cef_run_message_loop().
+
+  MUST be called from the main thread.
+
+  This function should only be called on the main application thread and only
+  if cef_run_message_loop() was used."
+  []
+  (assert @prepared-environment "Did you call download-and-prepare-environment! yet?")
   (cef_quit_message_loop))
 
 ;; ///
@@ -161,6 +182,9 @@
 
 (def default-target-dir (io/file "/tmp" "com.phronemophobic.cef"))
 (defn extract-helper
+  "Extract the helper process executable from the jar to the file system.
+
+  To support sandboxing, the cef requries a separate executable that can be called. The executable must exist on the file system to be run."
   ([]
    (extract-helper (doto default-target-dir
                      (.mkdir))))
@@ -175,10 +199,11 @@
        (.setExecutable target-path true false)))
    nil))
 
-(defn extract-framework
+(defn download-and-extract-framework
+  "The Chromium Framework is about 234M unzipped which doesn't belong in the clojure jar. Download and extract the framework to target-dir."
   ([]
-   (extract-framework (doto default-target-dir
-                        (.mkdir))))
+   (download-and-extract-framework (doto default-target-dir
+                                     (.mkdir))))
   ([target-dir]
    (let [url (clojure.java.io/as-url "https://cef-builds.spotifycdn.com/cef_binary_88.2.4%2Bgf3c4ca9%2Bchromium-88.0.4324.150_macosx64_minimal.tar.bz2")
          target-download (io/file target-dir "cef.tar.bz2")
@@ -209,14 +234,18 @@
      nil)))
 
 
-(defn prepare-environment!
+(defn download-and-prepare-environment!
+  "The Chromium Embedded Framework is about 90MB compressed and 234MB uncompressed which makes it impractical to include in the library jar.
+
+  Download the framework and doing some other environment setup required by cef."
   ([]
-   (prepare-environment! (doto default-target-dir
-                           (.mkdir))))
+   (download-and-prepare-environment!
+    (doto default-target-dir
+      (.mkdir))))
   ([target-dir]
    (when-not @prepared-environment
      (extract-helper target-dir)
-     (extract-framework target-dir)
+     (download-and-extract-framework target-dir)
 
      (_cef_load_library
       (.getAbsolutePath
@@ -230,6 +259,12 @@
      nil)))
 
 (defn cef-initialize
+  "This function should be called on the main application thread to initialize
+  the CEF browser process. The |application| parameter may be NULL. A return
+  value of true (1) indicates that it succeeded and false (0) indicates that it
+  failed. The |windows_sandbox_info| parameter is only used on Windows and may
+  be NULL (see cef_sandbox_win.h for details)."
+
   ([app]
    (assert (.exists (io/file default-target-dir "Chromium Embedded Framework.framework")))
    (cef-initialize (map->main-args)
@@ -243,5 +278,5 @@
                    app
                    nil))
   ([main-args settings app sandbox-info]
-   (assert @prepared-environment "Did you call prepare-environment! yet?")
+   (assert @prepared-environment "Did you call download-and-prepare-environment! yet?")
    (_cef_initialize main-args settings app sandbox-info)))

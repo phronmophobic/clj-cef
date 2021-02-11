@@ -1,7 +1,5 @@
 (ns com.phronemophobic.clj-cef
-  (:require [net.n01se.clojure-jna :as jna]
-            [com.phronemophobic.gen2 :as gen2]
-            [com.phronemophobic.cef :as cef
+  (:require [com.phronemophobic.cef :as cef
              :refer [print-doc
                      cef-string]]
             [com.phronemophobic.cinterop
@@ -17,8 +15,6 @@
    java.awt.Point
    [java.net URLEncoder])
   (:gen-class))
-
-(gen2/import-cef-classes)
 
 (def main-class-loader @clojure.lang.Compiler/LOADER)
 
@@ -52,7 +48,7 @@
   nil)
 
 (defn example []
-  (cef/prepare-environment!)
+  (cef/download-and-prepare-environment!)
 
   (def url "https://github.com/phronmophobic/membrane")
   (def browser-settings (cef/map->browser-settings))

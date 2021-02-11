@@ -590,7 +590,7 @@ base.size.setValue(this.size());
   (let [sname (get struct "name")]
     `(extend-protocol ~'IDoc
        ~(symbol (str->camelcase sname))
-       (~'doc [_#]
+       (~'doc [this#]
         ~(make-doc-string struct))
        (~'print-doc [this#]
         (println (~'doc this#))))))
@@ -598,8 +598,9 @@ base.size.setValue(this.size());
 (defn gen-docs* [structs]
   `(do
      (defprotocol ~'IDoc
-       (~'doc [_#])
-       (~'print-doc [_#]))
+       "Makes documentation accessible from instances."
+       (~'doc [~'this] "Returns the doc string for an instance.")
+       (~'print-doc [~'this] "Prints the doc string for an instance."))
      ~@(map gen-doc* structs)))
 
 (defmacro gen-docs []
