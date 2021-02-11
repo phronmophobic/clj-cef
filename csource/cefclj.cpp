@@ -84,13 +84,48 @@ int main(int argc, char* argv[]) {
 
 #if defined(HELPER)
     
+
+// https://stackoverflow.com/questions/4770985/how-to-check-if-a-string-starts-with-another-string-in-c/4770992#4770992
+bool prefix(const char *pre, const char *str)
+{
+    return strncmp(pre, str, strlen(pre)) == 0;
+}
+
+
     int main(int argc, char* argv[]) {
+
+        // char* framework_dir = NULL;
+        char framework_path[255] = "";
+
+        for ( int i = 0; i < argc; i++){
+            char* arg = argv[i];
+            if ( prefix("--framework-dir-path=", arg)){
+                strncpy(framework_path, arg+strlen("--framework-dir-path="), sizeof(framework_path) - 1);
+
+                // strncat(framework_path, "/Chromium Embedded Framework", sizeof(framework_p-strlen("/Chromium Embedded Framework"));
+
+                const char* executable_path = "/Chromium Embedded Framework";
+
+                if (strlen(executable_path) + 1 >
+                    sizeof(framework_path) - strlen(framework_path)){
+
+                    fprintf(stderr, "Framework Path is too long.\n");
+                    return 1;
+                }
+                (void)strncat(framework_path, executable_path,
+                              sizeof(framework_path) - strlen(framework_path) - 1);
+
+                break;
+            }
+        }
+
+
         CefScopedSandboxContext sandbox_context;
         if (!sandbox_context.Initialize(argc, argv)){
             return 1;
         }
 
-        if (!cef_load_library("/Users/adrian/workspace/clj-cef/csource/Contents/Frameworks/Chromium Embedded Framework.framework/Chromium Embedded Framework")) {
+        if (!cef_load_library(framework_path)) {
             fprintf(stderr, "Failed to load the CEF framework.\n");
             return 1;
         }
