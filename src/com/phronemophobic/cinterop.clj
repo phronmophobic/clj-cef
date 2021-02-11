@@ -44,6 +44,8 @@
 
 (def dispatch_sync (when objlib
                      (.getFunction ^com.sun.jna.NativeLibrary objlib "dispatch_sync_f")))
+(def dispatch_async (when objlib
+                     (.getFunction ^com.sun.jna.NativeLibrary objlib "dispatch_async_f")))
 
 (defonce callbacks (atom []))
 
@@ -69,6 +71,16 @@
     ;; we don't prevent the jvm exiting
     ;; now that we're done
     (com.sun.jna.Native/detach true)))
+
+(defn dispatch-async [f]
+  (if (and main-queue dispatch_sync)
+    (let [callback (DispatchCallback. f)
+          args (to-array [main-queue nil callback])]
+      (.invoke ^com.sun.jna.Function dispatch_async void args)
+      ;; please don't garbage collect me :D
+      (identity args)
+      nil)
+    (f)))
 
 (defn dispatch-sync [f]
   (if (and main-queue dispatch_sync)

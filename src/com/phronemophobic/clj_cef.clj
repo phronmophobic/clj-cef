@@ -4,8 +4,9 @@
             [com.phronemophobic.cef :as cef
              :refer [print-doc
                      cef-string]]
-            [com.phronemophobic.cinterop :refer
-             [dispatch-sync]])
+            [com.phronemophobic.cinterop
+             :refer [dispatch-sync
+                     dispatch-async]])
   (:import
    java.awt.image.BufferedImage
    java.awt.image.DataBuffer
@@ -13,11 +14,13 @@
    java.awt.image.Raster
    javax.imageio.ImageIO
    java.awt.image.ColorModel
-   java.awt.Point)
-  
-  )
+   java.awt.Point
+   [java.net URLEncoder])
+  (:gen-class))
 
 (gen2/import-cef-classes)
+
+(def main-class-loader @clojure.lang.Compiler/LOADER)
 
 (defn save-to-image!
   [f bi]
@@ -36,70 +39,20 @@
                            nil)]
     bi))
 
+(def hello "data:text/html,%3Ch1%3EHello%2C%20World!%3C%2Fh1%3E")
 
-(def n (atom 0) )
-
-
-(defn -run2 []
-  (cef/cef-load-library)
-  (let [
-
-        url "https://github.com/phronmophobic/membrane"
-        browser-settings (cef/map->browser-settings)
-
-        client (cef/map->client
-                {:get-render-handler
-                 (fn [client]
-                   (cef/map->render-handler
-                    {:get-view-rect
-                     (fn [handler browser rect]
-                       (set! (.width rect) 800)
-                       (set! (.height rect) 700))
-                     :on-paint
-                     (fn [handler browser type n rects buffer width height]
-)})
-                   )})
-
-        ;; cef_window_info_t window_info = {};
-        window-info (cef/map->window-info
-                     {:windowless-rendering-enabled 1})
-
-        bph (cef/map->browser-process-handler
-             {:on-context-initialized
-              (fn [bph]
-
-                (cef/cef-browser-host-create-browser window-info client url browser-settings nil nil))})
-
-        app (cef/map->app
-             {:get-browser-process-handler
-              (fn [app]
-                bph)})
-
-        main-args (cef/map->main-args)
-
-        settings
-        (cef/map->settings
-         {:framework-dir-path "/Users/adrian/workspace/clj-cef/csource/Contents/Frameworks/Chromium Embedded Framework.framework"
-          :browser-subprocess-path "/Users/adrian/workspace/clj-cef/csource/ceftest Helper"
-          :main-bundle-path "/Users/adrian/workspace/clj-cef/"
-          ;; :no-sandbox 1
-          :windowless-rendering-enabled 1})
-
-        code (cef/cef-initialize main-args, settings, app, nil)
-
-        ]
-    (cef/cef-run-message-loop)
-    (println "shutting down")
-    (cef/cef-shutdown)
-    )
-
+(defn test-url [s]
+  (str "data:text/html," (URLEncoder/encode s "utf-8"))
+  
   )
-
-
-
+(defonce messages (atom []))
+(defn log [s]
+  (println s)
+  (swap! messages conj s)
+  nil)
 
 (defn example []
-  (cef/cef-load-library)
+  (cef/prepare-environment!)
 
   (def url "https://github.com/phronmophobic/membrane")
   (def browser-settings (cef/map->browser-settings))
@@ -108,77 +61,75 @@
   (def lsh (cef/map->life-span-handler
             {:on-after-created
              (fn [this b]
-               (reset! browser b))}))
+               (reset! browser b))
+             :on-before-close
+             (fn [this b]
+               (reset! browser nil)
+               (cef/cef-quit-message-loop))}))
 
-  (def client (cef/map->client
-               {:get-life-span-handler
-                (fn [client]
-                  lsh)
-                :get-render-handler
-                (fn [client]
-                  (cef/map->render-handler
-                   {
+  (defonce load-handler (cef/map->load-handler))
+  (cef/merge->load-handler
+   load-handler
+   {:on-loading-state-change
+    (fn [this browser is-loading can-go-back? can-go-forward?]
+      (.setContextClassLoader (Thread/currentThread) main-class-loader))
+    :on-load-end
+    (fn [this browser frame i]
+      (.setContextClassLoader (Thread/currentThread) main-class-loader))})
 
-                    :get-view-rect
-                    (fn [handler browser rect]
-                      (set! (.width rect) 800)
-                      (set! (.height rect) 700))
-                    :on-paint
-                    (fn [handler browser type n rects buffer width height]
-                      (println "painting...")
-                      (save-to-image! "browser.png"
-                                      (rects->img type rects (.getIntArray buffer 0 (* width height)) width height)))})
-                  )}))
 
-        ;; cef_window_info_t window_info = {};
+  (defonce client (cef/map->client))
+  (cef/merge->client
+   client
+   {:get-life-span-handler
+    (fn [client]
+      lsh)
+    :get-load-handler
+    (fn [client]
+      load-handler)
+    :get-render-handler
+    (fn [client]
+      (cef/map->render-handler
+       {
+
+        :get-view-rect
+        (fn [handler browser rect]
+          (set! (.width rect) 800)
+          (set! (.height rect) 700))
+        :on-paint
+        (fn [handler browser type n rects buffer width height]
+          (println "painting")
+          (save-to-image! "browser.png"
+                          (rects->img type rects (.getIntArray buffer 0 (* width height)) width height)))})
+      )})
+
   (def window-info (cef/map->window-info
                     {:windowless-rendering-enabled 1}))
-
-
-
 
   (def bph
     (cef/map->browser-process-handler
      {:on-context-initialized
       (fn [bph]
-        (println "initialized")
         (cef/cef-browser-host-create-browser window-info client url browser-settings nil nil))
       :on-schedule-message-pump-work
-      (fn [this delay]
-        (println "pump delay " delay))
-      }))
+      (fn [this delay])}))
 
-  (defonce rph
-    (cef/map->render-process-handler
-     {:on-browser-created
-      (fn [rph,b,dict]
-        (println "got browser" b)
-        (reset! browser b)
 
-        )
-      }))
+  (defonce app (cef/map->app))
+  (cef/merge->app
+   app
+   {:get-browser-process-handler
+    (fn [app]
+      bph)})
 
-  (defonce app
-    (cef/map->app
-     {:get-browser-process-handler
-      (fn [app]
-        bph)}))
-
-  (println (cef/cef-initialize (cef/map->main-args)
-                               (cef/map->settings
-                                {:framework-dir-path "/Users/adrian/workspace/clj-cef/csource/Contents/Frameworks/Chromium Embedded Framework.framework"
-                                 :browser-subprocess-path "/Users/adrian/workspace/clj-cef/csource/ceftest Helper"
-                                 :main-bundle-path "/Users/adrian/workspace/clj-cef/"
-                                 :external-message-pump 1
-                                 :windowless-rendering-enabled 1})
-                               app
-                               nil))
-  #_(cef/cef-do-message-loop-work)
-  #_(cef/cef-run-message-loop)
-
+  (cef/cef-initialize app)
 
 
   ,)
+
+
+(defn work []
+  (cef/cef-do-message-loop-work))
 
 (defn clicks []
   (dotimes [i 100]
@@ -186,29 +137,22 @@
                :y (rand-int 500)}]
       (println "click " pos)
       #_(.sendMouseMoveEvent (.getHost @browser)
-                           (cef/map->mouse-event
-                            pos)
-                           0)
+                             (cef/map->mouse-event
+                              pos)
+                             0)
       (.sendMouseClickEvent (.getHost @browser)
-                              (cef/map->mouse-event
-                               pos)
-                              0
-                              (rand-nth [0 1])
-                              1))
-    (dispatch-sync work)
+                            (cef/map->mouse-event
+                             pos)
+                            0
+                            (rand-nth [0 1])
+                            1))
+    (work)
     (while (or (not @browser)
                (pos? (.isLoading @browser)))
       
-      (dispatch-sync work)
+      (work)
       (Thread/sleep 500))))
 
-(defn load-page [url]
-  (when-let [b @browser]
-    (let [f (.get_main_frame (.get_main_frame @browser) @browser)]
-      (.load_url (.load_url f) f (.getPointer (cef/cef-string url))))))
-
-(defn work []
-  (cef/cef-do-message-loop-work))
 
 
 (defn run [& args]
@@ -216,3 +160,11 @@
   (cef/cef-run-message-loop)
   #_(dispatch-sync -run2))
 
+(defn -main [& args]
+  (println "starting")
+  (dispatch-sync example)
+  (dispatch-async cef/cef-run-message-loop)
+  (println "waiting 10 seconds")
+  (Thread/sleep 10e3)
+  (println "closing browser")
+  (.closeBrowser (.getHost @browser) 1))

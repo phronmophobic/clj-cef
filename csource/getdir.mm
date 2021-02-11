@@ -4,8 +4,12 @@
 #import <Foundation/Foundation.h>
 #import <objc/runtime.h>
 
+static NSString* changed_bundle_path;
+
 @implementation NSBundle(changedBundle)
-+ (void) highjack {
++ (void) changeBundlePath:(NSString*) bundlePath {
+    changed_bundle_path = [bundlePath retain];
+
     Class originalClass = [NSBundle class];
     Method originalMeth = class_getClassMethod(originalClass, @selector(mainBundle));
     Method replacementMeth = class_getClassMethod([self class], @selector(changedBundle));
@@ -13,7 +17,7 @@
 }
 
 + (NSBundle*) changedBundle {
-    return [NSBundle bundleWithPath:@"/Users/adrian/workspace/clj-cef/csource"];
+    return [NSBundle bundleWithPath:changed_bundle_path];
 }
 @end
 
@@ -21,8 +25,8 @@
 
 extern "C"{
 
-    void swizzle(){
-        [NSBundle highjack];
+    void change_bundle_path(const char* bundle_path){
+        [NSBundle changeBundlePath:[NSString stringWithUTF8String:bundle_path]];
     }
 
 void printDirectory(){
