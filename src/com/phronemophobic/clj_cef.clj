@@ -31,7 +31,7 @@
         raster (Raster/createPackedRaster db width height width band-masks nil)
         bi (BufferedImage. default-cm
                            raster
-                           (.isAlphaPremultiplied default-cm)
+                           false ;; (.isAlphaPremultiplied default-cm)
                            nil)]
     bi))
 
