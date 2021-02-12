@@ -1,0 +1,36 @@
+{:paths ["src" "resources"]
+ :deps {org.clojure/clojure {:mvn/version "1.10.2"}
+        com.phronemophobic/membrane {:mvn/version "0.9.21-beta"}
+
+        com.phronemophobic/clj-cef {:local/root "../../../clj-cef"}
+
+        org.jetbrains.skija/skija-macos-x64 {:mvn/version "0.89.18"}
+
+        org.lwjgl/lwjgl {:mvn/version "3.2.3"}
+        org.lwjgl/lwjgl$natives-macos {:mvn/version "3.2.3"}
+        org.lwjgl/lwjgl-glfw {:mvn/version "3.2.3"}
+        org.lwjgl/lwjgl-glfw$natives-macos {:mvn/version "3.2.3"}
+        org.lwjgl/lwjgl-opengl {:mvn/version "3.2.3"}
+        org.lwjgl/lwjgl-opengl$natives-macos {:mvn/version "3.2.3"}}
+ 
+ :aliases
+ {:run-m {:main-opts ["-m" "clj-cef.browser"]}
+  :run-x {:ns-default clj-cef.browser
+          :exec-fn -main
+          :exec-args {:name "Clojure"}}
+  :test {:extra-paths ["test"]
+         :extra-deps {org.clojure/test.check {:mvn/version "1.1.0"}}}
+  :runner
+  {:extra-deps {com.cognitect/test-runner
+                {:git/url "https://github.com/cognitect-labs/test-runner"
+                 :sha "b6b3193fcc42659d7e46ecd1884a228993441182"}}
+   :main-opts ["-m" "cognitect.test-runner"
+               "-d" "test"]}
+  :uberjar {:replace-deps {seancorfield/depstar {:mvn/version "2.0.171"}}
+            :exec-fn hf.depstar/uberjar
+            :exec-args {:aot true
+                        :jar "browser.jar"
+                        :main-class "clj-cef.browser"
+                        :sync-pom true}}}
+ :mvn/repos
+ {"space-maven" {:url "https://packages.jetbrains.team/maven/p/skija/maven"}}}
