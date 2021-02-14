@@ -1,0 +1,23 @@
+{:paths ["src" "resources"]
+ :deps {org.clojure/clojure {:mvn/version "1.10.2"}
+        com.phronemophobic/clj-cef {:local/root "../../../clj-cef"}}
+ :aliases
+ {:run-m {:main-opts ["-m" "clj-cef.htmltoimage"]}
+  :run-x {:ns-default clj-cef.htmltoimage
+          :exec-fn -main
+          ;;:exec-args {}
+          }
+  :test {:extra-paths ["test"]
+         :extra-deps {org.clojure/test.check {:mvn/version "1.1.0"}}}
+  :runner
+  {:extra-deps {com.cognitect/test-runner
+                {:git/url "https://github.com/cognitect-labs/test-runner"
+                 :sha "b6b3193fcc42659d7e46ecd1884a228993441182"}}
+   :main-opts ["-m" "cognitect.test-runner"
+               "-d" "test"]}
+  :uberjar {:replace-deps {seancorfield/depstar {:mvn/version "2.0.171"}}
+            :exec-fn hf.depstar/uberjar
+            :exec-args {:aot true
+                        :jar "htmltoimage.jar"
+                        :main-class "clj-cef.htmltoimage"
+                        :sync-pom true}}}}
