@@ -185,29 +185,12 @@
     "int32" "int"
     "uint64" "long"
     
-    
-
-    "cef_paint_element_type_t" "int"
-    "cef_process_id_t" "int"
     "cef_string_map_t" "Pointer"
     "cef_string_multimap_t" "Pointer"
-    
-    
-
-    "cef_file_dialog_mode_t" "int"
-    "cef_color_type_t" "int"
     "cef_color_t" "int"
     "cef_string_t" "CefStringUtf16"
     "cef_string_userfree_t"  "CefStringUtf16"
-    "cef_composition_underline_style_t" "int"
-    "cef_event_flags_t" "int"
-    "cef_string_list_t" "Pointer"
-    "cef_channel_layout_t" "int"
-    "cef_main_axis_alignment_t" "int"
-    "cef_cross_axis_alignment_t" "int"
-    "cef_state_t" "int"
-    "cef_drag_operations_mask_t" "int"
-    "cef_mouse_button_type_t" "int"}
+    "cef_string_list_t" "Pointer"}
    (map #(vector % "int") cef-enums)))
 
 
