@@ -234,6 +234,31 @@ will not block."
      nil)))
 
 
+(defn prepare-environment!
+  ([]
+   (prepare-environment!
+    (doto default-target-dir
+      (.mkdir))))
+  ([target-dir]
+   (when-not @prepared-environment
+     (let [framework-file (io/file target-dir
+                                   "Chromium Embedded Framework.framework")]
+      (assert (.exists framework-file)
+              (str "Chromium Embedded Framework.framework not found at " (.getAbsolutePath framework-file) "\nDid you run download-and-extract-framework?")))
+     (extract-helper target-dir)
+
+     (_cef_load_library
+      (.getAbsolutePath
+       (io/file target-dir
+                "Chromium Embedded Framework.framework"
+                "Chromium Embedded Framework")
+       ))
+
+     (change_bundle_path (.getAbsolutePath (io/as-file target-dir)))
+     (reset! prepared-environment true)
+     nil)
+   ))
+
 (defn download-and-prepare-environment!
   "The Chromium Embedded Framework is about 90MB compressed and 234MB uncompressed which makes it impractical to include in the library jar.
 
@@ -244,18 +269,8 @@ will not block."
       (.mkdir))))
   ([target-dir]
    (when-not @prepared-environment
-     (extract-helper target-dir)
      (download-and-extract-framework target-dir)
-
-     (_cef_load_library
-      (.getAbsolutePath
-       (io/file target-dir
-                "Chromium Embedded Framework.framework"
-                "Chromium Embedded Framework")
-       ))
-
-     (change_bundle_path (.getAbsolutePath target-dir))
-     (reset! prepared-environment true)
+     (prepare-environment! target-dir)
      nil)))
 
 (defn cef-initialize
