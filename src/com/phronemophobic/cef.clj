@@ -322,6 +322,18 @@ will not block."
 ;; // cef_task_runner_t::GetForThread(threadId)->PostTask(task).
 ;; ///
 ;; CEF_EXPORT int cef_post_task(cef_thread_id_t threadId, cef_task_t* task);
+(defc cef_post_task Integer/TYPE [thread-id task])
+
+(defn post-task-to-main [f]
+  (cef_post_task 0
+                 (map->task
+                  {:execute
+                   (fn [this]
+                     (f))})))
+
+(defc cef_task_runner_get_for_thread CefTaskRunner [thread-id])
+
+
 
 ;; ///
 ;; // Post a task for delayed execution on the specified thread. Equivalent to
