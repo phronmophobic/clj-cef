@@ -25,6 +25,14 @@ public class CljCefLib {
         notGarbage = new ConcurrentLinkedQueue<Object>();
     }
 
+    public static String fromCefString(CefStringUtf16 cefstring) throws java.io.UnsupportedEncodingException{
+        if ( 0 == cefstring.length.intValue()){
+            return "";
+        } else{
+            return new String(cefstring.str.getByteArray(0, 2*cefstring.length.intValue()), "utf-16le");
+        }
+    }
+
     public static CefStringUtf16 toCefString(String s){
         WString wstr = new WString(s);
         CefStringUtf16 cefstring = new CefStringUtf16();
