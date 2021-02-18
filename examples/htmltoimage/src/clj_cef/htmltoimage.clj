@@ -176,4 +176,5 @@
   (when-let [img (if file
                    (file-to-image file size)
                    (url-to-image url size))]
+    (println "writing to" out)
     (save-to-image! out img)))
