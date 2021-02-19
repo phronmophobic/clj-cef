@@ -61,7 +61,7 @@ Tasks can be run on the main thread using `com.phronemophobic.cinterop/dispatch-
 
 All Cef* structs are automatically reference counted and managed by `clj-cef`. However, non Cef* struct data received from callbacks or provided to cef are not.
 
-To prevent from crashing the JVM, follow these simple rules:
+To prevent from crashing the JVM, follow these rules:
 - Retain references to any non Cef* struct data provided in calls to cef
 - Make copies of any data received from cef callbacks that will outlast the callback call. 
 
