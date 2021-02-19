@@ -38,7 +38,7 @@ clj-cef/resources/cef.json should be updated.
 
 # Sandbox
 
-Chromium's sandbox requires the sandboxed subprocesses to be in the bundle directory of the main app. Since the "main app" is java, this is a problem. As a workaround, we swizzle NSBundle's `mainBundle` method with a new one that points to the target bundle dir for our app. By default, the target dir is `/tmp/com.phronemophobic.cef/`.
+Chromium's sandbox requires the sandboxed subprocesses to be in the bundle directory of the main app. Since the "main app" is java, this is a problem. As a workaround, we swizzle NSBundle's `mainBundle` method with a new one that points to the target bundle dir for our app. By default, the target dir is `/tmp/com.phronemophobic.cef/`. See [getdir.mm](getdir.mm)
 
 See below for the sandbox policy.
 
