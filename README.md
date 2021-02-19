@@ -126,9 +126,9 @@ Note: clj-cef is running in the browser process (see [processes](https://bitbuck
 
 The cef library has a huge amount of functionality. For examples check out:
 
-[browser](examples/browser): A simple browser UI using membrane+skija.
-[htmltoimage](examples/htmltoimage): A cli for converting a url to an image.
-[cssinspect](examples/cssinspect): A cli for calculating css coverage and finiding unused css for a url.
+[browser](examples/browser): A simple browser UI using membrane+skija.  
+[htmltoimage](examples/htmltoimage): A cli for converting a url to an image.  
+[cssinspect](examples/cssinspect): A cli for calculating css coverage and finiding unused css for a url.  
 
 ## Cef message loop
 
