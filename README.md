@@ -88,7 +88,7 @@ The main steps for using `clj-cef` are:
 
 ### 1. Download and extract the Chromium Embedded Framework
 
-The cef framework is about 80MB compressed which makes it a poor fit including within the library jar. 
+The cef framework is about 80MB compressed (~230MB uncompressed) which makes it a poor fit including within the library jar. 
 
 ```clojure
 ;; will download and extract cef framework to /tmp/com.phronemophobic.cef/
