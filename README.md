@@ -192,6 +192,25 @@ You can deny and things will continue to work, but cookies might not be encrypte
 
 See https://bitbucket.org/chromiumembedded/cef/issues/2692/mac-networkservice-allow-custom-service.
 
+Per the issue:
+> This prompt can be disabled and cookies will not be encrypted if you pass the --use-mock-keychain command-line flag.
+
+For example:
+```clojure
+
+;; assuming app created setup
+
+;; modify the CefApp
+(cef/merge->app app
+                {:on-before-command-line-processing
+                 (fn [app s command-line]
+                   (.appendSwitch command-line "--use-mock-keychain"))})
+
+;; initialize as normal
+(cef/cef-initialize app)
+
+```
+
 ## FAQ
 
 ### Why aren't my callbacks being called?
