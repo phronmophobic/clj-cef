@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.phronemophobic</groupId>
   <artifactId>clj-cef</artifactId>
-  <version>0.9.0</version>
+  <version>0.9.1</version>
   <name>clj-cef</name>
   <description>Clojure bindings for Chromium Embedded Framework.</description>
   <url>https://github.com/com.phronemophobic/clj-cef</url>
