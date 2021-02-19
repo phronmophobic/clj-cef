@@ -75,8 +75,7 @@ All the examples will use the following requires.
 
 ```clojure
 (:require [com.phronemophobic.cef :as cef
-             :refer [print-doc
-                     cef-string]]
+             :refer [print-doc]]
             [com.phronemophobic.cinterop
              :refer [dispatch-sync
                      dispatch-async]])
@@ -128,7 +127,7 @@ The cef library has a huge amount of functionality. For examples check out:
 
 [browser](examples/browser): A simple browser UI using membrane+skija.
 [htmltoimage](examples/htmltoimage): A cli for converting a url to an image.
-[cssinspect](examples/cssinspect): A cli for calculating css coverage and finiding unused css for a url.
+[cssinspect](examples/cssinspect): A cli for calculating css coverage and finding unused css for a url.
 
 ## Cef message loop
 
@@ -178,13 +177,12 @@ For more info, check out the [examples](examples/) or cef docs.
 
 ## Documentation
 
-All `com.phronemophobic.cef/map->`* and `com.phronemophobic.cef/merge->`* functions have the comments provided by their wrapped counter parts from the cef library. Additionally all Cef* struct instances can have they documentation printed or retrieved using `com.phronemophobic.cef/print-doc` and `com.phronemophobic.cef/doc` respectively.
+All `com.phronemophobic.cef/map->`* and `com.phronemophobic.cef/merge->`* functions have the comments provided by their wrapped counter parts from the cef library. Additionally, all Cef* struct instances can have their documentation printed or retrieved using `com.phronemophobic.cef/print-doc` and `com.phronemophobic.cef/doc` respectively.
 
-[CEF Project page](https://bitbucket.org/chromiumembedded/cef/src/master/)
-[Cef API docs](https://bitbucket.org/chromiumembedded/cef/src/master/)
-[clj-cef reference docs](https://phronmophobic.github.io/clj-cef/)
-[Examples](examples/)
-
+[CEF Project page](https://bitbucket.org/chromiumembedded/cef/src/master/)  
+[Cef API docs](https://bitbucket.org/chromiumembedded/cef/src/master/)  
+[clj-cef reference docs](https://phronmophobic.github.io/clj-cef/)  
+[Examples](examples/)  
 
 ## FAQ
 
@@ -195,7 +193,7 @@ You need to pump the cef event loop with either `cef/cef-run-message-loop` or `c
 ### Why not java-cef?
 
 * java-cef wraps cef which wraps the Chromium library. The c api provided by cef is fairly clojure friendly (thanks to JNA). 
-* The java wrapper doesn't make accessing cef from clojure any easier.
+* the java wrapper doesn't make accessing cef from clojure any easier.
 * java-cef is hard to build, https://bitbucket.org/chromiumembedded/java-cef/wiki/BranchesAndBuilding
 * java-cef enforces a rigid application structure, https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage#markdown-header-mac-os-x
 * java-cef is not repl friendly
@@ -211,13 +209,6 @@ the render process is a completely different OS process. While providing a rende
 - Passing data to cef that may be garbage collected before it's done being used
 - Holding onto data that may be freed
 
-## License
-
-Copyright © 2021 Adrian
-
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
-
 # License
 
-Copyright 2021 Adrian Smith. Membrane is licensed under Apache License v2.0.
+Copyright 2021 Adrian Smith. clj-cef is licensed under Apache License v2.0.
