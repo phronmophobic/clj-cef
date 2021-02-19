@@ -80,6 +80,23 @@
   (assert @prepared-environment "Did you call download-and-prepare-environment! yet?")
   (cef_browser_host_create_browser window-info client (when url (cef-string url)) browser-settings extra-info request-context))
 
+;; (defc cef_browser_host_create_browser_sync CefBrowser [window-info client url browser-settings extra-info request-context])
+
+;; (defn cef-browser-host-create-browser-sync
+;;   "Create a new browser window using the window parameters specified by
+;; |windowInfo|. 
+
+;;   MUST be called on the main thread.
+
+;;   If |request_context| is NULL the global request context will be
+;;   used. This function can only be called on the browser process UI thread. The
+;;   optional |extra_info| parameter provides an opportunity to specify extra
+;;   information specific to the created browser that will be passed to
+;;   cef_render_process_handler_t::on_browser_created() in the render process."
+;;   [window-info client url browser-settings extra-info request-context]
+;;   (assert @prepared-environment "Did you call download-and-prepare-environment! yet?")
+;;   (cef_browser_host_create_browser_sync window-info client (when url (cef-string url)) browser-settings extra-info request-context))
+
 
 
 (defc cef_shutdown void [])
