@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.phronemophobic</groupId>
   <artifactId>clj-cef</artifactId>
-  <version>0.9.1</version>
+  <version>0.9.2</version>
   <name>clj-cef</name>
   <description>Clojure bindings for Chromium Embedded Framework.</description>
   <url>https://github.com/com.phronemophobic/clj-cef</url>
@@ -29,6 +29,26 @@
       <groupId>org.clojure</groupId>
       <artifactId>clojure</artifactId>
       <version>1.10.1</version>
+    </dependency>
+    <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna</artifactId>
+      <version>5.6.0</version>
+    </dependency>
+    <dependency>
+      <groupId>net.n01se</groupId>
+      <artifactId>clojure-jna</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.clojure</groupId>
+      <artifactId>data.json</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <version>1.20</version>
     </dependency>
   </dependencies>
   <build>
