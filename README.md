@@ -198,7 +198,7 @@ Per the issue:
 For example:
 ```clojure
 
-;; assuming app created setup
+;; assuming app created during setup
 
 ;; modify the CefApp
 (cef/merge->app app
