@@ -186,7 +186,7 @@ All `com.phronemophobic.cef/map->`* and `com.phronemophobic.cef/merge->`* functi
 
 ## Scary Keychain popup
 
-> "java" wants to use your confidential information stored in "Chromium Safe Storage" in your keychain.
+> java wants to use your confidential information stored in "Chromium Safe Storage" in your keychain.
 
 You can deny and things will continue to work, but cookies might not be encrypted. It's unclear based off the available documentation.
 
