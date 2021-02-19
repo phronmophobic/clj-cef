@@ -198,7 +198,7 @@ You need to pump the cef event loop with either `cef/cef-run-message-loop` or `c
 * java-cef enforces a rigid application structure, https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage#markdown-header-mac-os-x
 * java-cef is not repl friendly
 
-### Why is my `get-render-process-handler` never called?
+### Why is `get-render-process-handler` never called?
 
 the render process is a completely different OS process. While providing a render process handler using `clj-cef` is technically possible, it's not very straightforward. Fortuately, most interesting functionality can be accessed solely from the browser process. If you need a render process handler, please file an issue.
 
