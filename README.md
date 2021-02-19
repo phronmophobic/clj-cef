@@ -1,6 +1,10 @@
 # clj-cef
 
-### Clojure bindings for the Chromium Embedded Framework
+Clojure bindings for the Chromium Embedded Framework
+
+Dependency:
+
+[![Clojars Project](https://img.shields.io/clojars/v/com.phronemophobic/clj-cef.svg)](https://clojars.org/com.phronemophobic/clj-cef)
 
 ## Rationale
 
