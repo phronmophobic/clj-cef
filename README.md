@@ -33,6 +33,7 @@ The clojure and Java wrappers are generated from the cef header files. Translati
 | clojure struct creation           | map->struct-name     |        |        | map->browser    | com.phronemophobic.cef    |
 | clojure struct manipulation       | merge->struct-name   |        |        | merge->browser  |                           |
 
+
 ## Threading
 
 In general, most cef functions expect to be called on **the** main thread unless otherwise documented. On Mac OSX, the main thread is a very specific thread. If cef functions are called on the wrong thread, it will crash the jvm.
