@@ -184,6 +184,14 @@ All `com.phronemophobic.cef/map->`* and `com.phronemophobic.cef/merge->`* functi
 [clj-cef reference docs](https://phronmophobic.github.io/clj-cef/)  
 [Examples](examples/)  
 
+## Scary Keychain popup
+
+> "java" wants to use your confidential information stored in "Chromium Safe Storage" in your keychain.
+
+You can deny and things will continue to work, but cookies might not be encrypted. It's unclear based off the available documentation.
+
+See https://bitbucket.org/chromiumembedded/cef/issues/2692/mac-networkservice-allow-custom-service.
+
 ## FAQ
 
 ### Why aren't my callbacks being called?
