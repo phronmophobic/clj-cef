@@ -28,14 +28,17 @@ Currently, clj-cef is only available on Mac OSX. If you'd like to see linux supp
 
 The clojure and Java wrappers are generated from the cef header files. Translation of names and callbacks are as follows:
 
+|                                   | Naming               | Prefix  | Suffix | Example         | package/namespace         |
+| --                                | --                   | --      | --     | --              | --                        |
+| cef c struct                      | cef\_struct\_name\_t | cef_    | \_t    | cef\_browser\_t |                           |
+| Java Classes wrapping cef Structs | CamelCase            | Cef     |        | CefBrowser      | com.phronemophobic.cljcef |
+| clojure struct creation           | map->struct-name     | map->   |        | map->browser    | com.phronemophobic.cef    |
+| clojure struct manipulation       | merge->struct-name   | merge-> |        | merge->browser  |                           |
+
 |                                   | Naming               | Prefix | Suffix | Example         | package/namespace         |
 | --                                | --                   | --     | --     | --              | --                        |
-| cef c struct                      | cef\_struct\_name\_t | cef_   | \_t    | cef\_browser\_t |                           |
 | cef c struct callback             | func_name            |        |        | load\_url       |                           |
-| Java Classes wrapping cef Structs | CamelCase            | Cef    |        | CefBrowser      | com.phronemophobic.cljcef |
 | Java methods wrapping callbacks   | camelCase            |        |        | loadUrl         |                           |
-| clojure struct creation           | map->struct-name     |        |        | map->browser    | com.phronemophobic.cef    |
-| clojure struct manipulation       | merge->struct-name   |        |        | merge->browser  |                           |
 
 
 ## Threading
