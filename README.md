@@ -35,10 +35,10 @@ The clojure and Java wrappers are generated from the cef header files. Translati
 | clojure struct creation           | map->struct-name     | map->   |        | map->browser    | com.phronemophobic.cef    |
 | clojure struct manipulation       | merge->struct-name   | merge-> |        | merge->browser  | com.phronemophobic.cef    |
 
-| Callback                        | Naming    | Prefix | Suffix | Example   | package/namespace |
-| --                              | --        | --     | --     | --        | --                |
-| cef c struct callback           | func_name |        |        | load\_url |                   |
-| Java methods wrapping callbacks | camelCase |        |        | loadUrl   |                   |
+| Callback                        | Naming    | Example   |
+| --                              | --        | --        |
+| cef c struct callback           | func_name | load\_url |
+| Java methods wrapping callbacks | camelCase | loadUrl   |
 
 
 ## Threading
