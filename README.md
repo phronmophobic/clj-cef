@@ -33,7 +33,7 @@ The clojure and Java wrappers are generated from the cef header files. Translati
 | cef c struct                      | cef\_struct\_name\_t | cef_    | \_t    | cef\_browser\_t |                           |
 | Java Classes wrapping cef Structs | CamelCase            | Cef     |        | CefBrowser      | com.phronemophobic.cljcef |
 | clojure struct creation           | map->struct-name     | map->   |        | map->browser    | com.phronemophobic.cef    |
-| clojure struct manipulation       | merge->struct-name   | merge-> |        | merge->browser  |                           |
+| clojure struct manipulation       | merge->struct-name   | merge-> |        | merge->browser  | com.phronemophobic.cef    |
 
 | Callback                        | Naming    | Prefix | Suffix | Example   | package/namespace |
 | --                              | --        | --     | --     | --        | --                |
