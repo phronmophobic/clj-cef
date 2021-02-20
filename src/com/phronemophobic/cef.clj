@@ -101,6 +101,8 @@
 
 (defc cef_shutdown void [])
 (defn ^:no-doc cef-shutdown
+  "This function should be called on the main application thread to shut down
+  the CEF browser process before the application exits."
   []
   (assert @prepared-environment "Did you call download-and-prepare-environment! yet?")
   (cef_shutdown))
