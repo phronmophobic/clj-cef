@@ -6,7 +6,7 @@
   <version>0.9.2</version>
   <name>clj-cef</name>
   <description>Clojure bindings for Chromium Embedded Framework.</description>
-  <url>https://github.com/com.phronemophobic/clj-cef</url>
+  <url>https://github.com/phronmophobic/clj-cef</url>
   <licenses>
     <license>
       <name>Apache</name>
@@ -19,9 +19,9 @@
     </developer>
   </developers>
   <scm>
-    <url>https://github.com/com.phronemophobic/clj-cef</url>
-    <connection>scm:git:git://github.com/com.phronemophobic/clj-cef.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/com.phronemophobic/clj-cef.git</developerConnection>
+    <url>https://github.com/phronmophobic/clj-cef</url>
+    <connection>scm:git:git://github.com/phronmophobic/clj-cef.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/phronmophobic/clj-cef.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
   <dependencies>
