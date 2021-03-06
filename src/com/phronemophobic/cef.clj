@@ -9,6 +9,8 @@
                      dispatch-async]]
             [com.phronemophobic.fs :as fs])
   (:import com.sun.jna.WString
+           com.sun.jna.Memory
+           com.sun.jna.Pointer
            java.nio.file.Files
            java.nio.file.attribute.FileAttribute))
 
@@ -22,9 +24,9 @@
 
 (def ^:no-doc void Void/TYPE)
 
-(defc change_bundle_path void [bundle-path])
+(defc change_bundle_path cinterop/cljcef void [bundle-path])
 
-(defc cef_string_wide_to_utf16 Integer/TYPE [wstr len cef-string])
+(defc cef_string_wide_to_utf16 cinterop/cef Integer/TYPE [wstr len cef-string])
 
 (defn cef-string
   "Convert a java String into a CefString"
@@ -34,16 +36,16 @@
         _ (cef_string_wide_to_utf16 wstr (.length wstr) cef-str)]
     cef-str))
 
-(defc cef_execute_process Integer/TYPE [main-args app ])
+(defc cef_execute_process cinterop/cef Integer/TYPE [main-args app ])
 #_(defn cef-execute-process [main-args app]
   (cef_execute_process main-args app))
 
-(defc _cef_load_library Integer/TYPE [String])
+(defc _cef_load_library cinterop/cljcef Integer/TYPE [String])
 
-(defc _cef_initialize Integer/TYPE [args settings application sandbox-info])
+(defc _cef_initialize cinterop/cljcef Integer/TYPE [args settings application sandbox-info])
 
 
-(defc cef_run_message_loop void [])
+(defc cef_run_message_loop cinterop/cef void [])
 (defn cef-run-message-loop
   "Run the event loop that drives the browser.
 
@@ -61,7 +63,7 @@
   (assert @prepared-environment "Did you call download-and-prepare-environment! yet?")
   (cef_run_message_loop))
 
-(defc cef_browser_host_create_browser void [window-info client url browser-settings extra-info request-context])
+(defc cef_browser_host_create_browser cinterop/cef void [window-info client url browser-settings extra-info request-context])
 
 (defn cef-browser-host-create-browser
   "Create a new browser window using the window parameters specified by
@@ -80,7 +82,7 @@
   (assert @prepared-environment "Did you call download-and-prepare-environment! yet?")
   (cef_browser_host_create_browser window-info client (when url (cef-string url)) browser-settings extra-info request-context))
 
-;; (defc cef_browser_host_create_browser_sync CefBrowser [window-info client url browser-settings extra-info request-context])
+;; (defc cef_browser_host_create_browser_sync cinterop/cef CefBrowser [window-info client url browser-settings extra-info request-context])
 
 ;; (defn cef-browser-host-create-browser-sync
 ;;   "Create a new browser window using the window parameters specified by
@@ -99,7 +101,7 @@
 
 
 
-(defc cef_shutdown void [])
+(defc cef_shutdown cinterop/cef void [])
 (defn ^:no-doc cef-shutdown
   []
   (assert @prepared-environment "Did you call download-and-prepare-environment! yet?")
@@ -141,7 +143,7 @@
 ;; ///
 ;; CEF_EXPORT void cef_do_message_loop_work();
 
-(defc cef_do_message_loop_work void [])
+(defc cef_do_message_loop_work cinterop/cef void [])
 (defn cef-do-message-loop-work
   "Perform a single iteration of CEF message loop processing.
 
@@ -172,7 +174,7 @@ will not block."
 ;; ///
 ;; CEF_EXPORT void cef_quit_message_loop();
 
-(defc cef_quit_message_loop void [])
+(defc cef_quit_message_loop cinterop/cef void [])
 (defn cef-quit-message-loop
   "Quit the CEF message loop that was started by calling cef_run_message_loop().
 
@@ -222,36 +224,75 @@ will not block."
    (download-and-extract-framework (doto default-target-dir
                                      (.mkdir))))
   ([target-dir]
-   (let [url (clojure.java.io/as-url "https://cef-builds.spotifycdn.com/cef_binary_88.2.4%2Bgf3c4ca9%2Bchromium-88.0.4324.150_macosx64_minimal.tar.bz2")
+   (let [url (clojure.java.io/as-url "https://cef-builds.spotifycdn.com/cef_binary_88.2.4%2Bgf3c4ca9%2Bchromium-88.0.4324.150_linux64_minimal.tar.bz2")
          target-download (io/file target-dir "cef.tar.bz2")
-         framework-path (io/file target-dir
-                                 "cef_binary_88.2.4+gf3c4ca9+chromium-88.0.4324.150_macosx64_minimal"
-                                 "Release"
-                                 "Chromium Embedded Framework.framework")
-         link-path (io/file target-dir "Chromium Embedded Framework.framework")]
-     (when-not (.exists link-path)
+
+         cef-dir (io/file target-dir "cef_binary_88.2.4+gf3c4ca9+chromium-88.0.4324.150_linux64_minimal")
+
+
+         last-copied-file (io/file target-dir "libcljcef.so")
+         ]
+     (when-not (.exists last-copied-file)
        (when-not (.exists target-download)
          ;; (println "downloading")
          (with-open [url-stream (io/input-stream url)]
            (io/copy url-stream target-download)))
-
+       
        ;; (println "extracting...")
-       (when-not (.exists framework-path)
+       (when-not (.exists cef-dir)
          (fs/untar-bz2 target-download target-dir))
 
-       ;; Files.createSymbolicLink(newLink, target);
-       (when-not (.exists link-path)
-         (Files/createSymbolicLink (.toPath link-path)
-                                   (.toPath framework-path)
-                                   (into-array FileAttribute []))))
+       (fs/copy-contents (io/file cef-dir "Resources")
+                         target-dir)
 
-     (when (.exists target-download)
-       (.delete target-download))
+       (fs/copy-contents (io/file cef-dir "Release")
+                         target-dir)
+
+       (doseq [resource ["ceflib Helper"
+                         "libcljcef.so"]]
+         (with-open [is (io/input-stream (io/resource (str "linux-x86-64/" resource)))]
+           (io/copy is
+                    (io/file target-dir resource)))
+         (.setExecutable (io/file target-dir resource) true true))
+       
+
+       ;; cef_100_percent.pak
+       ;; cef_200_percent.pak
+       ;; cef_extensions.pak
+       ;; cef.pak
+       ;; devtools_resources.pak
+
+       ;; 'ceflib Helper'
+       ;; chrome-sandbox
+       ;; icudtl.dat
+       ;; libcef.so
+       ;; libcljcef.so
+       ;; libEGL.so
+       ;; libGLESv2.so
+       ;; locales
+       ;; snapshot_blob.bin
+       ;; swiftshader
+       ;; v8_context_snapshot.bin
+       
+       
+
+       ;; Files.createSymbolicLink(newLink, target);
+       #_(when-not (.exists link-path)
+           (Files/createSymbolicLink (.toPath link-path)
+                                     (.toPath framework-path)
+                                     (into-array FileAttribute [])))
+
+       (when (.exists target-download)
+         (.delete target-download)))
 
      nil)))
 
 
-(defn prepare-environment!
+(defn prepare-environment! [& args]
+  (reset! prepared-environment true)
+  )
+
+#_(defn prepare-environment!
   ([]
    (prepare-environment!
     (doto default-target-dir
@@ -290,6 +331,29 @@ will not block."
      (prepare-environment! target-dir)
      nil)))
 
+(def args [;;"--disable-gpu"
+           ;;"--disable-gpu-compositing"
+           ;; "--disable-webgl"
+           ;;"--headless"
+           "--off-screen-rendering-enabled"
+           ])
+
+
+
+(def argv (Memory. (* com.sun.jna.Native/POINTER_SIZE
+                      (count args))))
+
+#_(doseq [i (range (count args))]
+  (.setPointer argv (* i com.sun.jna.Native/POINTER_SIZE)
+               (preserve!
+                (let [buf (.getBytes (nth args i) "utf-8")
+                      str-mem (Memory. (inc (count buf)))]
+                  (.write str-mem 0 buf 0 (count buf))
+                  (.write str-mem (count buf) (byte-array [0]) 0 1)
+                  str-mem))))
+
+
+
 (defn cef-initialize
   "This function should be called on the main application thread to initialize
   the CEF browser process. The |application| parameter may be NULL. A return
@@ -298,15 +362,23 @@ will not block."
   be NULL (see cef_sandbox_win.h for details)."
 
   ([app]
-   (assert (.exists (io/file default-target-dir "Chromium Embedded Framework.framework")))
-   (cef-initialize (map->main-args)
+   ;; (assert (.exists (io/file default-target-dir "Chromium Embedded Framework.framework")))
+   (cef-initialize (map->main-args
+
+                    #_{:argc (int (count args))
+                     :argv argv})
                    (map->settings
-                    {:framework-dir-path (.getAbsolutePath (io/file default-target-dir "Chromium Embedded Framework.framework"))
+                    {;; :framework-dir-path (.getAbsolutePath (io/file default-target-dir "Chromium Embedded Framework.framework"))
                      :browser-subprocess-path (.getAbsolutePath (io/file default-target-dir "ceflib Helper"))
-                     :main-bundle-path (.getAbsolutePath default-target-dir)
-                     ;;:external-message-pump 1
-                     ;; :no-sandbox 1
-                     :windowless-rendering-enabled 1})
+                     ;; :main-bundle-path (.getAbsolutePath default-target-dir)
+                     :locales-dir-path (.getAbsolutePath (io/file default-target-dir "locales"))
+                     ;; :external-message-pump 1
+                     ;; :log-file (preserve! "/home/adrian2/workspace/cef/clj-cef/cef.log")
+                     ;; :multi-threaded-message-loop 1
+                     ;; :log-severity 3
+                     :no-sandbox 1
+                     ;;:windowless-rendering-enabled 1
+                     })
                    app
                    nil))
   ([main-args settings app sandbox-info]
@@ -339,7 +411,7 @@ will not block."
 ;; // cef_task_runner_t::GetForThread(threadId)->PostTask(task).
 ;; ///
 ;; CEF_EXPORT int cef_post_task(cef_thread_id_t threadId, cef_task_t* task);
-(defc cef_post_task Integer/TYPE [thread-id task])
+(defc cef_post_task cinterop/cef Integer/TYPE [thread-id task])
 
 (defn post-task-to-main [f]
   (cef_post_task 0
@@ -348,7 +420,7 @@ will not block."
                    (fn [this]
                      (f))})))
 
-(defc cef_task_runner_get_for_thread CefTaskRunner [thread-id])
+(defc cef_task_runner_get_for_thread cinterop/cef CefTaskRunner [thread-id])
 
 
 

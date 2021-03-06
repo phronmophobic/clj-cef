@@ -240,7 +240,22 @@ the render process is a completely different OS process. While providing a rende
 - Calling cef function on the wrong thread
 - Passing data to cef that may be garbage collected before it's done being used
 - Holding onto data that may be freed
+- Pay careful attention to the expected return types of callbacks.
 
 # License
 
 Copyright 2021 Adrian Smith. clj-cef is licensed under Apache License v2.0.
+
+# Linux Stuff
+
+https://magpcss.org/ceforum/viewtopic.php?t=16993
+
+xvfb-run
+
+apt-get install xvfb
+libatk1.0-dev
+libatk-bridge2.0-dev
+libxkbcommon-dev
+libxcomposite-dev
+libxrandr-dev
+libgbm-dev

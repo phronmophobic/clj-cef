@@ -13,27 +13,7 @@
 (def void Void/TYPE)
 (def main-class-loader @clojure.lang.Compiler/LOADER)
 
-(def cljcef
-  (try
-    (com.sun.jna.NativeLibrary/getInstance "cljcef")
-    (catch java.lang.UnsatisfiedLinkError e
-      nil)))
-
-(defmacro defc
-  ([fn-name lib ret]
-   `(defc ~fn-name ~lib ~ret []))
-  ([fn-name lib ret args]
-   (let [cfn-sym (with-meta (gensym "cfn") {:tag 'com.sun.jna.Function})]
-     `(if ~lib
-        (let [~cfn-sym (.getFunction ~(with-meta lib {:tag 'com.sun.jna.NativeLibrary})
-                                     ~(name fn-name))]
-          (defn- ~fn-name [~@args]
-            (.invoke ~cfn-sym
-                     ~ret (to-array [~@args]))))
-        (defn- ~fn-name [~@args]
-          (throw (Exception. (str ~(name fn-name) " not loaded."))))))))
-
-(defc cef_string_wide_to_utf16 cljcef Integer/TYPE [wstr len cef-string])
+(cinterop/defc cef_string_wide_to_utf16 cinterop/cef Integer/TYPE [wstr len cef-string])
 
 (defn cef-edits [structs]
   (update-in structs ["_cef_base_ref_counted_t" "props"]

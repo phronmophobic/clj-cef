@@ -5,23 +5,37 @@
            com.sun.jna.Memory
            com.sun.jna.ptr.FloatByReference
            com.sun.jna.ptr.IntByReference
-           com.sun.jna.IntegerType))
+           com.sun.jna.IntegerType
+           java.util.concurrent.Executors))
 
 (def ^:no-doc main-class-loader @clojure.lang.Compiler/LOADER)
 (def ^:no-doc void Void/TYPE)
 
+(declare cljcef)
+
+
+(def ^:no-doc cef
+  (try
+    (com.sun.jna.NativeLibrary/getInstance "/tmp/com.phronemophobic.cef/libcef.so")
+    (catch java.lang.UnsatisfiedLinkError e
+      ;;(throw e)
+      nil
+      )))
+
 (def ^:no-doc cljcef
   (try
-    (com.sun.jna.NativeLibrary/getInstance "cljcef")
+    (com.sun.jna.NativeLibrary/getInstance "/tmp/com.phronemophobic.cef/libcljcef.so")
     (catch java.lang.UnsatisfiedLinkError e
-      nil)))
+      ;; (throw e)
+      nil
+      )))
+
+
 
 
 (defmacro ^:no-doc defc
-  ([fn-name ret]
-   `(defc ~fn-name ~ret []))
-  ([fn-name ret args]
-   `(defc ~fn-name cljcef ~ret ~args))
+  ([fn-name lib ret]
+   `(defc ~fn-name ~lib ~ret []))
   ([fn-name lib ret args]
    (let [cfn-sym (with-meta (gensym "cfn") {:tag 'com.sun.jna.Function})]
      `(if ~lib
@@ -78,6 +92,8 @@
     ;; now that we're done
     (com.sun.jna.Native/detach true)))
 
+(def dispatch-executor (delay (Executors/newSingleThreadExecutor)))
+
 (defn dispatch-async
   "Run `f` on the main thread. Will return immediately."
   [f]
@@ -88,7 +104,7 @@
       ;; please don't garbage collect me :D
       (identity args)
       nil)
-    (f)))
+    (.submit @dispatch-executor f)))
 
 (defn dispatch-sync
   "Run `f` on the main thread. Waits for `f` to complete before returning."
@@ -100,7 +116,7 @@
       ;; please don't garbage collect me :D
       (identity args)
       nil)
-    (f)))
+    (.get (.submit @dispatch-executor f))))
 
 
 (defonce ^:no-doc not-garbage

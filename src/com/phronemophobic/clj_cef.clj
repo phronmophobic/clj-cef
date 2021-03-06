@@ -4,6 +4,7 @@
                      cef-string]]
             [com.phronemophobic.cinterop
              :refer [dispatch-sync
+                     defc
                      dispatch-async]])
   (:import
    java.awt.image.BufferedImage
@@ -51,45 +52,77 @@
   (cef/download-and-prepare-environment!)
 
   (def url "https://github.com/phronmophobic/membrane")
-  (def browser-settings (cef/map->browser-settings))
+  (def browser-settings (cef/map->browser-settings
+                         ;; disable
+                         ;;{:webgl 2}
+                         ))
 
   (defonce browser (atom nil))
   (def lsh (cef/map->life-span-handler
             {:on-after-created
              (fn [this b]
+               (println "craeted brwoser!")
                (reset! browser b))
              :on-before-close
              (fn [this b]
                (reset! browser nil)
                (cef/cef-quit-message-loop))}))
 
-  (defonce load-handler (cef/map->load-handler))
-  (cef/merge->load-handler
-   load-handler
-   {:on-loading-state-change
-    (fn [this browser is-loading can-go-back? can-go-forward?]
-      (.setContextClassLoader (Thread/currentThread) main-class-loader))
-    :on-load-end
-    (fn [this browser frame i]
-      (.setContextClassLoader (Thread/currentThread) main-class-loader))})
+  ;; (defonce load-handler (cef/map->load-handler))
+  ;; (cef/merge->load-handler
+  ;;  load-handler
+  ;;  {:on-loading-state-change
+  ;;   (fn [this browser is-loading can-go-back? can-go-forward?]
+  ;;     (.setContextClassLoader (Thread/currentThread) main-class-loader))
+  ;;   :on-load-end
+  ;;   (fn [this browser frame i]
+  ;;     (.setContextClassLoader (Thread/currentThread) main-class-loader))})
 
 
-  (defonce client (cef/map->client))
-  (cef/merge->client
+  (defonce client (cef/map->client
+                   {:get-life-span-handler
+                    (fn [client]
+                      (println "getting life span handler")
+                      lsh)
+                    ;; :get-load-handler
+                    ;; (fn [client]
+                    ;;   load-handler)
+                    :get-render-handler
+                    (fn [client]
+                      (println "getting render handler")
+                      (cef/map->render-handler
+                       {
+
+                        :get-view-rect
+                        (fn [handler browser rect]
+                          (println "getting view rect")
+                          (set! (.width rect) 800)
+                          (set! (.height rect) 700))
+                        :on-paint
+                        (fn [handler browser type n rects buffer width height]
+                          (println "painting")
+                          (save-to-image! "browser.png"
+                                          (rects->img type rects (.getIntArray buffer 0 (* width height)) width height)))})
+                      )}))
+  
+  #_(cef/merge->client
    client
    {:get-life-span-handler
     (fn [client]
+      (println "getting life span handler")
       lsh)
-    :get-load-handler
-    (fn [client]
-      load-handler)
+    ;; :get-load-handler
+    ;; (fn [client]
+    ;;   load-handler)
     :get-render-handler
     (fn [client]
+      (println "getting render handler")
       (cef/map->render-handler
        {
 
         :get-view-rect
         (fn [handler browser rect]
+          (println "getting view rect")
           (set! (.width rect) 800)
           (set! (.height rect) 700))
         :on-paint
@@ -107,8 +140,48 @@
      {:on-context-initialized
       (fn [bph]
         (cef/cef-browser-host-create-browser window-info client url browser-settings nil nil))
-      :on-schedule-message-pump-work
-      (fn [this delay])}))
+      #_#_:on-before-child-process-launch
+      (fn [this command-line]
+        (println "disabling gpu?")
+        #_(doseq [flag [
+                      "off-screen-rendering-enabled"
+                      "disable-webgl"
+                      "headless"
+                      "enable-begin-frame-scheduling"
+                      "disable-gpu"
+                      "disable-gpu-compositing"
+                      "disable-gpu-driver-bug-workarounds"
+                      "disable-gpu-early-init"
+                      "disable-gpu-memory-buffer-compositor-resources"
+                      "disable-gpu-memory-buffer-video-frames"
+                      "disable-gpu-process-crash-limit"
+                      "disable-gpu-process-for-dx12-info-collection"
+                      "disable-gpu-program-cache"
+                      "disable-gpu-rasterization"
+                      ;; "disable-gpu-sandbox"
+                      "disable-gpu-shader-disk-cache"
+                      "disable-gpu-vsync"
+                      "disable-3d-apis"
+                      "disable-gpu-watchdog"]]
+          (.appendSwitch command-line flag))
+
+        #_(doseq [flag cef/args
+                :let [switch (subs flag 2)]]
+          (.appendSwitch command-line switch))
+        
+
+        (doto command-line
+          (.appendSwitch "disable-webgl")
+          (.appendSwitch "disable-gpu")
+          (.appendSwitch "disable-gpu-vsync")
+          (.appendSwitch "disable-gpu-compositing"))
+        nil
+        ;; command_line->AppendSwitch("disable-gpu");
+        ;; command_line->AppendSwitch("disable-gpu-compositing");
+        )
+      ;; :on-schedule-message-pump-work
+      ;; (fn [this delay])
+      }))
 
 
   (defonce app (cef/map->app))
@@ -156,11 +229,22 @@
   (cef/cef-run-message-loop)
   #_(dispatch-sync -run2))
 
+;; (def xlib (com.sun.jna.NativeLibrary/getInstance "X11"))
+
+;; (defc XInitThreads xlib Integer/TYPE [])
+
 (defn -main [& args]
+  ;; (XInitThreads)
   (println "starting")
-  (dispatch-sync example)
-  (dispatch-async cef/cef-run-message-loop)
-  (println "waiting 10 seconds")
-  (Thread/sleep 10e3)
+  #_(dispatch-sync example)
+  (example)
+  
+  (dotimes [i 100]
+    (println "pumping")
+    (cef/cef-do-message-loop-work)
+    (Thread/sleep 500))
+  #_(dispatch-async cef/cef-run-message-loop)
+  ;; (println "waiting 15 seconds")
+  ;; (Thread/sleep 30e3)
   (println "closing browser")
   (.closeBrowser (.getHost @browser) 1))
