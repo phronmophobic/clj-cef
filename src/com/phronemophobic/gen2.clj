@@ -5,6 +5,7 @@
   (:import com.sun.jna.Structure$FFIType$size_t
            com.sun.jna.CallbackProxy
            com.sun.jna.Pointer
+           com.sun.jna.Platform
            com.sun.jna.WString
            [com.phronemophobic.cljcef
             CefStringUtf16])
@@ -16,13 +17,23 @@
 (cinterop/defc cef_string_wide_to_utf16 cinterop/cef Integer/TYPE [wstr len cef-string])
 
 (defn cef-edits [structs]
-  (update-in structs ["_cef_base_ref_counted_t" "props"]
-             (fn [props]
-               (mapv (fn [prop]
-                       (if (= "fptr" (get prop "type"))
-                         (assoc prop "args" [["void"]])
-                         prop))
-                     props))))
+  (-> structs
+      (update-in ["_cef_base_ref_counted_t" "props"]
+                 (fn [props]
+                   (mapv (fn [prop]
+                           (if (= "fptr" (get prop "type"))
+                             (assoc prop "args" [["void"]])
+                             prop))
+                         props)))
+
+      (update-in ["_cef_window_info_t" "props"]
+                 (fn [props]
+                   (mapv (fn [prop]
+                           (if (= "hidden" (get prop "name"))
+                             (update prop "comment"
+                                     conj "This property is not available on linux.")
+                             prop))
+                         props)))))
 
 (defn load-structs []
   (cef-edits
@@ -306,6 +317,8 @@ package com.phronemophobic.cljcef;\n\n"
          "import com.sun.jna.Structure;\n\n"
          "import com.sun.jna.Callback;\n\n"
          "import com.sun.jna.Pointer;\n\n"
+         (when (= "cef_window_info_t" (get struct "name"))
+           "import com.sun.jna.Platform;\n\n")
          "import java.util.List;\n\n"
          "import java.util.Arrays;\n\n"
          
@@ -342,7 +355,24 @@ base.size.setValue(this.size());
          "\n\n"
 
          "protected List getFieldOrder() {
-                                            return Arrays.asList(" (clojure.string/join ", " (map #(str "\"" (get % "name") "\"") (get struct "props"))) ");
+ "
+         ;; ugh
+         ;; the hidden property does not exist on linux for cef_window_info_t
+         ;; including it will ruin the struct offsets
+         (if (= "cef_window_info_t" (get struct "name"))
+           (str
+
+            "List fieldOrder = Arrays.asList(" (clojure.string/join ", " (map #(str "\"" (get % "name") "\"") (get struct "props"))) ");\n"
+            "if (Platform.isLinux()) {fieldOrder.remove(\"hidden\");}\n"
+            "return fieldOrder;\n")
+
+           ;;else
+           (str
+            ;; whitespace to preserve git diffs
+            "                                           "
+            "return Arrays.asList(" (clojure.string/join ", " (map #(str "\"" (get % "name") "\"") (get struct "props"))) ");"))
+
+         "
  }"
 
          "\n\n"
@@ -441,6 +471,13 @@ base.size.setValue(this.size());
         
         props (->> (get struct "props")
                    (remove #(= "base" (get % "name"))))
+
+        ;; ugh, "hidden" property for windowinfo doesn't exist on linux
+        props (if (and (= "cef_window_info_t" (get struct "name"))
+                       (Platform/isLinux))
+                (remove #(= "hidden" (get % "name"))
+                        props)
+                props)
         
         
 
