@@ -331,29 +331,6 @@ will not block."
      (prepare-environment! target-dir)
      nil)))
 
-(def args [;;"--disable-gpu"
-           ;;"--disable-gpu-compositing"
-           ;; "--disable-webgl"
-           ;;"--headless"
-           "--off-screen-rendering-enabled"
-           ])
-
-
-
-(def argv (Memory. (* com.sun.jna.Native/POINTER_SIZE
-                      (count args))))
-
-#_(doseq [i (range (count args))]
-  (.setPointer argv (* i com.sun.jna.Native/POINTER_SIZE)
-               (preserve!
-                (let [buf (.getBytes (nth args i) "utf-8")
-                      str-mem (Memory. (inc (count buf)))]
-                  (.write str-mem 0 buf 0 (count buf))
-                  (.write str-mem (count buf) (byte-array [0]) 0 1)
-                  str-mem))))
-
-
-
 (defn cef-initialize
   "This function should be called on the main application thread to initialize
   the CEF browser process. The |application| parameter may be NULL. A return
