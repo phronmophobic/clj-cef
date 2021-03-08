@@ -252,10 +252,4 @@ https://magpcss.org/ceforum/viewtopic.php?t=16993
 
 xvfb-run
 
-apt-get install xvfb
-libatk1.0-dev
-libatk-bridge2.0-dev
-libxkbcommon-dev
-libxcomposite-dev
-libxrandr-dev
-libgbm-dev
+apt install xvfb libatk1.0-dev libatk-bridge2.0-dev libxkbcommon-dev libxcomposite-dev libxrandr-dev libgbm-dev
