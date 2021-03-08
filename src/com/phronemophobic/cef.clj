@@ -318,21 +318,17 @@ will not block."
 
   ([app]
    ;; (assert (.exists (io/file default-target-dir "Chromium Embedded Framework.framework")))
-   (cef-initialize (map->main-args
-
-                    #_{:argc (int (count args))
-                     :argv argv})
+   (cef-initialize (map->main-args)
                    (map->settings
                     {;; :framework-dir-path (.getAbsolutePath (io/file default-target-dir "Chromium Embedded Framework.framework"))
                      :browser-subprocess-path (.getAbsolutePath (io/file default-target-dir "ceflib Helper"))
                      ;; :main-bundle-path (.getAbsolutePath default-target-dir)
                      :locales-dir-path (.getAbsolutePath (io/file default-target-dir "locales"))
+                     :resources-dir-path (.getAbsolutePath (io/file default-target-dir))
                      ;; :external-message-pump 1
-                     ;; :log-file (preserve! "/home/adrian2/workspace/cef/clj-cef/cef.log")
                      ;; :multi-threaded-message-loop 1
-                     ;; :log-severity 3
                      :no-sandbox 1
-                     ;;:windowless-rendering-enabled 1
+                     :windowless-rendering-enabled 1
                      })
                    app
                    nil))
