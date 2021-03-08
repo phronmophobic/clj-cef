@@ -101,6 +101,11 @@ def get_structs(cursor ):
 
                 # assuming fields
                 for cc in c.get_children():
+                    if cc.kind != CursorKind.FIELD_DECL:
+                        print( cc.kind, cc.spelling, c.spelling)
+                    if cc.kind == CursorKind.UNION_DECL or cc.kind == CursorKind.STRUCT_DECL:
+                        continue
+
                     assert(cc.kind == CursorKind.FIELD_DECL), "Expecting only field decls"
                     comment = comments.get(cc.hash)
 
