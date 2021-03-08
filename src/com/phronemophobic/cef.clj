@@ -219,7 +219,7 @@ will not block."
    nil))
 
 (defn download-and-extract-framework
-  "The Chromium Framework is about 234M unzipped which doesn't belong in the clojure jar. Download and extract the framework to target-dir."
+  "The Chromium Framework is about 234M (500M on linux) unzipped which doesn't belong in the clojure jar. Download and extract the framework to target-dir."
   ([]
    (download-and-extract-framework (doto default-target-dir
                                      (.mkdir))))
@@ -242,45 +242,23 @@ will not block."
        (when-not (.exists cef-dir)
          (fs/untar-bz2 target-download target-dir))
 
-       (fs/copy-contents (io/file cef-dir "Resources")
-                         target-dir)
-
-       (fs/copy-contents (io/file cef-dir "Release")
-                         target-dir)
+       (doseq [folder ["Resources" "Release"]]
+         (doseq [f (.listFiles (io/file cef-dir folder))]
+           (println "linking " (str folder "/" (.getName f))
+                    (.getAbsolutePath (io/file target-dir (.getName f))))
+           (try
+             (Files/createSymbolicLink (.toPath (io/file target-dir (.getName f)))
+                                       (.toPath f)
+                                       (into-array FileAttribute []))
+             (catch java.nio.file.FileAlreadyExistsException e
+               nil))))
 
        (doseq [resource ["ceflib Helper"
                          "libcljcef.so"]]
-         (with-open [is (io/input-stream (io/resource (str "linux-x86-64/" resource)))]
+         (with-open [is (io/input-stream (io/resource (str "extract/linux-x86-64/" resource)))]
            (io/copy is
                     (io/file target-dir resource)))
          (.setExecutable (io/file target-dir resource) true true))
-       
-
-       ;; cef_100_percent.pak
-       ;; cef_200_percent.pak
-       ;; cef_extensions.pak
-       ;; cef.pak
-       ;; devtools_resources.pak
-
-       ;; 'ceflib Helper'
-       ;; chrome-sandbox
-       ;; icudtl.dat
-       ;; libcef.so
-       ;; libcljcef.so
-       ;; libEGL.so
-       ;; libGLESv2.so
-       ;; locales
-       ;; snapshot_blob.bin
-       ;; swiftshader
-       ;; v8_context_snapshot.bin
-       
-       
-
-       ;; Files.createSymbolicLink(newLink, target);
-       #_(when-not (.exists link-path)
-           (Files/createSymbolicLink (.toPath link-path)
-                                     (.toPath framework-path)
-                                     (into-array FileAttribute [])))
 
        (when (.exists target-download)
          (.delete target-download)))
