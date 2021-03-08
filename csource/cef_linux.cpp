@@ -6,6 +6,9 @@
 #include "include/capi/cef_app_capi.h"
 #include "thirdparty/backupsignalhandlers/signal_restore_posix.h"
 
+#define LOG(fmt, ...) \
+            do {FILE *fp; fp = fopen("cef.log", "a");fprintf(fp, fmt, __VA_ARGS__); fclose(fp);} while (0)
+
 #if defined(HELPER)
 
     // https://stackoverflow.com/questions/4770985/how-to-check-if-a-string-starts-with-another-string-in-c/4770992#4770992
