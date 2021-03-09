@@ -5,9 +5,10 @@
 #ifndef SIGNAL_RESTORE_POSIX_H
 #define SIGNAL_RESTORE_POSIX_H
 
-void BackupSignalHandlers();
+
 
 extern "C"{
+  void BackupSignalHandlers();
   void RestoreSignalHandlers();
 }
 

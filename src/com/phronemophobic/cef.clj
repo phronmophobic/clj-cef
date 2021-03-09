@@ -11,6 +11,7 @@
   (:import com.sun.jna.WString
            com.sun.jna.Memory
            com.sun.jna.Pointer
+           com.sun.jna.Platform
            java.nio.file.Files
            java.nio.file.attribute.FileAttribute))
 
@@ -265,22 +266,13 @@ will not block."
 
      nil)))
 
-
-(defn prepare-environment! [& args]
-  (reset! prepared-environment true)
-  )
-
-#_(defn prepare-environment!
-  ([]
-   (prepare-environment!
-    (doto default-target-dir
-      (.mkdir))))
+(defn prepare-environment-macosx!
   ([target-dir]
    (when-not @prepared-environment
      (let [framework-file (io/file target-dir
                                    "Chromium Embedded Framework.framework")]
-      (assert (.exists framework-file)
-              (str "Chromium Embedded Framework.framework not found at " (.getAbsolutePath framework-file) "\nDid you run download-and-extract-framework?")))
+       (assert (.exists framework-file)
+               (str "Chromium Embedded Framework.framework not found at " (.getAbsolutePath framework-file) "\nDid you run download-and-extract-framework?")))
      (extract-helper target-dir)
 
      (_cef_load_library
@@ -294,6 +286,40 @@ will not block."
      (reset! prepared-environment true)
      nil)
    ))
+
+(cinterop/defc BackupSignalHandlers cinterop/cljcef cinterop/void [])
+
+(defn prepare-environment-linux!
+  ([target-dir]
+   (let []
+     (System/setProperty "jna.debug_load" "true")
+     (println "updating library path")
+     (doseq [prop ["jna.platform.library.path"
+                   "jna.library.path"]
+             :let [jna-paths (some-> (System/getProperty prop)
+                                     (clojure.string/split #":")
+                                     (into #{}))]]
+       (when (not (contains? jna-paths target-dir))
+         (System/setProperty prop
+                             (if-let [s (System/getProperty prop)]
+                               (str s ":" (.getAbsolutePath target-dir))
+                               (.getAbsolutePath target-dir))))))
+   
+   (BackupSignalHandlers)
+   (reset! prepared-environment true)))
+
+
+(defn prepare-environment!
+  ([]
+   (prepare-environment!
+    (doto default-target-dir
+      (.mkdir))))
+  ([target-dir]
+   (if (Platform/isLinux)
+     (prepare-environment-linux! target-dir)
+     (prepare-environment-macosx! target-dir))))
+
+
 
 (defn download-and-prepare-environment!
   "The Chromium Embedded Framework is about 90MB compressed and 234MB uncompressed which makes it impractical to include in the library jar.

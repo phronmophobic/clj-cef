@@ -477,6 +477,11 @@ base.size.setValue(this.size());
          (keywordize (get prop "name")) " " (get-type-doc prop)
          "\n" text))))))
 
+(defonce restored-signals (atom false))
+(cinterop/defc RestoreSignalHandlers cinterop/cljcef cinterop/void [])
+(defn restore-signal-handlers []
+  (RestoreSignalHandlers))
+
 (defn gen-wrapper* [struct]
   (let [sname (get struct "name")
 
@@ -534,6 +539,9 @@ base.size.setValue(this.size());
                                               (interface-name prop)))
 
                                 (~(symbol (get prop "name")) [this# ~@fn-args]
+                                 (when (not @restored-signals)
+                                   (restore-signal-handlers)
+                                   (reset! restored-signals true))
                                  (try
                                    (~(symbolize (get prop "name")) ~@fn-args)
                                    (catch Exception e#
