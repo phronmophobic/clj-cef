@@ -1,2 +1,3 @@
 libcljcef.dylib
 ceflib Helper
+csource/libcljcef.so
