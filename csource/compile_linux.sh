@@ -15,7 +15,7 @@ clang++ \
     -lcef \
     -std=c++17 \
     -DHELPER \
-    "-Wl,-rpath,/tmp/com.phronemophobic.cef/" \
+    "-Wl,-rpath,"'$ORIGIN' \
     -o "ceflib Helper" \
     thirdparty/backupsignalhandlers/signal_restore_posix.cpp \
     cef_linux.cpp
@@ -29,6 +29,7 @@ clang++ \
     -L "$CEF_DIR/Release" \
     -lcef \
     -std=c++17 \
+    "-Wl,-rpath,"'$ORIGIN' \
     -shared \
     -o libcljcef.so \
     thirdparty/backupsignalhandlers/signal_restore_posix.cpp \
@@ -37,5 +38,9 @@ clang++ \
 
 cp libcljcef.so ../resources/extract/linux-x86-64
 cp "ceflib Helper" ../resources/extract/linux-x86-64
+
+# cp libcljcef.so /tmp/com.phronemophobic.cef/
+# cp "ceflib Helper" /tmp/com.phronemophobic.cef/
+
 
 echo "done"
