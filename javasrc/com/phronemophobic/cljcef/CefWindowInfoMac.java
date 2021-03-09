@@ -10,13 +10,11 @@ import com.sun.jna.Callback;
 
 import com.sun.jna.Pointer;
 
-import com.sun.jna.Platform;
-
 import java.util.List;
 
 import java.util.Arrays;
 
-public class CefWindowInfo extends Structure{
+public class CefWindowInfoMac extends Structure{
 
 
 
@@ -44,10 +42,7 @@ public int external_begin_frame_enabled;
 public Pointer view;
 
 protected List getFieldOrder() {
- List fieldOrder = Arrays.asList("window_name", "x", "y", "width", "height", "hidden", "parent_view", "windowless_rendering_enabled", "shared_texture_enabled", "external_begin_frame_enabled", "view");
-if (Platform.isLinux()) {fieldOrder.remove("hidden");}
-return fieldOrder;
-
+                                            return Arrays.asList("window_name", "x", "y", "width", "height", "hidden", "parent_view", "windowless_rendering_enabled", "shared_texture_enabled", "external_begin_frame_enabled", "view");
  }
 
 }

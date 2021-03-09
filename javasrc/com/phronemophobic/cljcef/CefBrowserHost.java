@@ -114,7 +114,7 @@ void stop_finding(CefBrowserHost x0, int x1);
 
 public static interface ShowDevToolsFunc extends Callback {
 
-void show_dev_tools(CefBrowserHost x0, CefWindowInfo x1, CefClient x2, CefBrowserSettings x3, CefPoint x4); 
+void show_dev_tools(CefBrowserHost x0, Pointer x1, CefClient x2, CefBrowserSettings x3, CefPoint x4); 
 }
 
 public static interface CloseDevToolsFunc extends Callback {
@@ -556,7 +556,7 @@ public void stopFinding (int x1) {
 
 }
 
-public void showDevTools (CefWindowInfo x1, CefClient x2, CefBrowserSettings x3, CefPoint x4) {
+public void showDevTools (Pointer x1, CefClient x2, CefBrowserSettings x3, CefPoint x4) {
 
   this.show_dev_tools.show_dev_tools(this,  x1,  x2,  x3,  x4);
 

@@ -16,8 +16,36 @@
 
 (cinterop/defc cef_string_wide_to_utf16 cinterop/cef Integer/TYPE [wstr len cef-string])
 
+(defn edit-platform-dependent-window-info [structs]
+  (let [window-info (get structs "_cef_window_info_t")
+        linux-window-info (-> window-info
+                              (update "props"
+                                      (fn [props]
+                                        (remove #(= "hidden" (get % "name"))
+                                                props)))
+                              (assoc "name"
+                                     "cef_window_info_linux_t"))
+
+        mac-window-info (-> window-info
+                            (assoc "name" "cef_window_info_mac_t")
+                            (update "props"
+                                    (fn [props]
+                                      (mapv (fn [prop]
+                                              (if (= "hidden" (get prop "name"))
+                                                (update prop "comment"
+                                                        conj "Mac OSX only")
+                                                prop))
+                                            props))))
+
+        structs (-> structs
+                    (dissoc "_cef_window_info_t")
+                    (assoc "_cef_window_info_mac_t" mac-window-info)
+                    (assoc "_cef_window_info_linux_t" linux-window-info))]
+    structs))
+
 (defn cef-edits [structs]
   (-> structs
+      (edit-platform-dependent-window-info)
       (update-in ["_cef_base_ref_counted_t" "props"]
                  (fn [props]
                    (mapv (fn [prop]
@@ -26,14 +54,7 @@
                              prop))
                          props)))
 
-      (update-in ["_cef_window_info_t" "props"]
-                 (fn [props]
-                   (mapv (fn [prop]
-                           (if (= "hidden" (get prop "name"))
-                             (update prop "comment"
-                                     conj "This property is not available on linux.")
-                             prop))
-                         props)))))
+      ))
 
 (defn load-structs []
   (cef-edits
@@ -181,7 +202,11 @@
     "cef_color_t" "int"
     "cef_string_t" "CefStringUtf16"
     "cef_string_userfree_t"  "CefStringUtf16"
-    "cef_string_list_t" "Pointer"}
+    "cef_string_list_t" "Pointer"
+
+    ;; platform dependent
+    "struct _cef_window_info_t" "Pointer"
+    }
    (map #(vector % "int") cef-enums)))
 
 
@@ -317,8 +342,6 @@ package com.phronemophobic.cljcef;\n\n"
          "import com.sun.jna.Structure;\n\n"
          "import com.sun.jna.Callback;\n\n"
          "import com.sun.jna.Pointer;\n\n"
-         (when (= "cef_window_info_t" (get struct "name"))
-           "import com.sun.jna.Platform;\n\n")
          "import java.util.List;\n\n"
          "import java.util.Arrays;\n\n"
          
@@ -356,21 +379,10 @@ base.size.setValue(this.size());
 
          "protected List getFieldOrder() {
  "
-         ;; ugh
-         ;; the hidden property does not exist on linux for cef_window_info_t
-         ;; including it will ruin the struct offsets
-         (if (= "cef_window_info_t" (get struct "name"))
-           (str
-
-            "List fieldOrder = Arrays.asList(" (clojure.string/join ", " (map #(str "\"" (get % "name") "\"") (get struct "props"))) ");\n"
-            "if (Platform.isLinux()) {fieldOrder.remove(\"hidden\");}\n"
-            "return fieldOrder;\n")
-
-           ;;else
-           (str
+         (str
             ;; whitespace to preserve git diffs
             "                                           "
-            "return Arrays.asList(" (clojure.string/join ", " (map #(str "\"" (get % "name") "\"") (get struct "props"))) ");"))
+            "return Arrays.asList(" (clojure.string/join ", " (map #(str "\"" (get % "name") "\"") (get struct "props"))) ");")
 
          "
  }"
@@ -472,15 +484,6 @@ base.size.setValue(this.size());
         props (->> (get struct "props")
                    (remove #(= "base" (get % "name"))))
 
-        ;; ugh, "hidden" property for windowinfo doesn't exist on linux
-        props (if (and (= "cef_window_info_t" (get struct "name"))
-                       (Platform/isLinux))
-                (remove #(= "hidden" (get % "name"))
-                        props)
-                props)
-        
-        
-
         fname (symbol (str "map->"
                            (-> sname
                                (clojure.string/replace #"^cef_" "")
@@ -571,10 +574,38 @@ base.size.setValue(this.size());
 
 (defn gen-wrappers*
   ([]
-   (gen-wrappers* (vals (load-structs))))
+   (gen-wrappers* (load-structs)))
   ([structs]
    `(do
-      ~@(map gen-wrapper* structs))))
+      ~@(map gen-wrapper* (vals structs))
+
+      ;; mac osx has an extra property compared to linux
+      ;; we need separate structs for proper memory layout
+      ;; but in clojure we can just ignore the extra "hidden" propery
+      (defn ~'map->window-info
+        ([]
+         (if (Platform/isLinux)
+           (~'map->window-info-linux)
+           (~'map->window-info-mac)))
+        ([m#]
+         (if (Platform/isLinux)
+           (~'map->window-info-linux (dissoc m# :hidden))
+           (~'map->window-info-mac m#))))
+      (let [meta# (meta ~(list 'var 'map->window-info-mac))]
+        (alter-meta! ~(list 'var 'map->window-info)
+                     merge (select-keys meta# [:doc :arglists])))
+
+
+      (defn ~'merge->window-info
+        ([struct# m#]
+         (if (Platform/isLinux)
+           (~'merge->window-info-linux struct# (dissoc m# :hidden))
+           (~'merge->window-info-mac struct# m#))))
+      (let [meta# (meta ~(list 'var 'merge->window-info-mac))]
+        (alter-meta! ~(list 'var 'merge->window-info)
+                     merge (select-keys meta# [:doc :arglists])))
+
+      nil)))
 
 (defmacro gen-wrappers []
   (gen-wrappers*))
