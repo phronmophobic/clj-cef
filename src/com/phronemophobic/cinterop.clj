@@ -14,23 +14,29 @@
 (declare cljcef)
 
 
-(def ^:no-doc cef
-  (try
-    (com.sun.jna.NativeLibrary/getInstance "/tmp/com.phronemophobic.cef/libcef.so")
-    (catch java.lang.UnsatisfiedLinkError e
-      ;;(throw e)
-      nil
-      )))
-
 (def ^:no-doc cljcef
-  (try
-    (com.sun.jna.NativeLibrary/getInstance "/tmp/com.phronemophobic.cef/libcljcef.so")
-    (catch java.lang.UnsatisfiedLinkError e
-      ;; (throw e)
-      nil
-      )))
+  (delay
+    (try
+      (com.sun.jna.NativeLibrary/getInstance "cljcef")
+      (catch java.lang.UnsatisfiedLinkError e
+        (throw e)))))
+
+(def ^:no-doc cef
+  (delay
+    (try
+      (com.sun.jna.NativeLibrary/getInstance "cef")
+      (catch java.lang.UnsatisfiedLinkError e
+        (throw e)))))
 
 
+
+(defn test-load-cljcef []
+  ((requiring-resolve 'com.phronemophobic.cef/prepare-environment!))
+  @cljcef)
+
+(defn test-load-cef []
+  ((requiring-resolve 'com.phronemophobic.cef/prepare-environment!))
+  @cef)
 
 
 (defmacro ^:no-doc defc
