@@ -95,7 +95,16 @@
     ;; now that we're done
     (com.sun.jna.Native/detach true)))
 
-(def dispatch-executor (delay (Executors/newSingleThreadExecutor)))
+(defonce dispatch-executor (delay
+                             (let [thread-factory
+                                   (reify
+                                     java.util.concurrent.ThreadFactory
+                                     (newThread [this r]
+                                       (let [thread (.newThread (Executors/defaultThreadFactory)
+                                                                r)]
+                                         (.setDaemon thread true)
+                                         thread)))]
+                               (Executors/newSingleThreadExecutor thread-factory))))
 
 (defn dispatch-async
   "Run `f` on the main thread. Will return immediately."
