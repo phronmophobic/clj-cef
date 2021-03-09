@@ -3,6 +3,7 @@
   (:require [net.n01se.clojure-jna :as jna])
   (:import com.sun.jna.Pointer
            com.sun.jna.Memory
+           com.sun.jna.Platform
            com.sun.jna.ptr.FloatByReference
            com.sun.jna.ptr.IntByReference
            com.sun.jna.IntegerType
@@ -23,11 +24,12 @@
 
 (def ^:no-doc cef
   (delay
-    (try
-      (com.sun.jna.NativeLibrary/getInstance "cef")
-      (catch java.lang.UnsatisfiedLinkError e
-        (throw e)))))
-
+    (if (Platform/isLinux)
+      (try
+        (com.sun.jna.NativeLibrary/getInstance "cef")
+        (catch java.lang.UnsatisfiedLinkError e
+          (throw e)))
+      @cljcef)))
 
 
 (defn test-load-cljcef []
@@ -44,33 +46,28 @@
    `(defc ~fn-name ~lib ~ret []))
   ([fn-name lib ret args]
    (let [cfn-sym (with-meta (gensym "cfn") {:tag 'com.sun.jna.Function})]
-     `(if ~lib
-        (let [~cfn-sym (.getFunction ~(with-meta lib {:tag 'com.sun.jna.NativeLibrary})
-                                     ~(name fn-name))]
-          (defn- ~fn-name [~@args]
-            (.invoke ~cfn-sym
-                     ~ret (to-array [~@args]))))
+     `(let [~cfn-sym (delay (.getFunction ~(with-meta `(deref ~lib) {:tag 'com.sun.jna.NativeLibrary})
+                                          ~(name fn-name)))]
         (defn- ~fn-name [~@args]
-          (throw (Exception. (str ~(name fn-name) " not loaded."))))))))
+          (.invoke (deref ~cfn-sym)
+                   ~ret (to-array [~@args])))))))
 
 
 
 (def ^:no-doc
-  objlib (try
-           (com.sun.jna.NativeLibrary/getInstance "CoreFoundation")
-           (catch UnsatisfiedLinkError e
-             nil)))
+  objlib (delay
+           (try
+             (com.sun.jna.NativeLibrary/getInstance "CoreFoundation")
+             (catch UnsatisfiedLinkError e
+               nil))))
 
 (def ^:no-doc
-  main-queue (when objlib
-               (.getGlobalVariableAddress ^com.sun.jna.NativeLibrary objlib "_dispatch_main_q")))
+  main-queue (delay
+               (when @objlib
+                 (.getGlobalVariableAddress ^com.sun.jna.NativeLibrary objlib "_dispatch_main_q"))))
 
-(def ^:no-doc
-  dispatch_sync (when objlib
-                  (.getFunction ^com.sun.jna.NativeLibrary objlib "dispatch_sync_f")))
-(def ^:no-doc
-  dispatch_async (when objlib
-                   (.getFunction ^com.sun.jna.NativeLibrary objlib "dispatch_async_f")))
+(defc dispatch_sync objlib void [f])
+(defc dispatch_async objlib void [f])
 
 (defonce ^:no-doc
   callbacks (atom []))
@@ -103,26 +100,26 @@
 (defn dispatch-async
   "Run `f` on the main thread. Will return immediately."
   [f]
-  (if (and main-queue dispatch_sync)
+  (if (Platform/isLinux)
+    (.submit @dispatch-executor f)
     (let [callback (DispatchCallback. f)
-          args (to-array [main-queue nil callback])]
-      (.invoke ^com.sun.jna.Function dispatch_async void args)
+          args (to-array [])]
+      (dispatch_async @main-queue nil callback)
       ;; please don't garbage collect me :D
       (identity args)
-      nil)
-    (.submit @dispatch-executor f)))
+      nil)))
 
 (defn dispatch-sync
   "Run `f` on the main thread. Waits for `f` to complete before returning."
   [f]
-  (if (and main-queue dispatch_sync)
+  (if (Platform/isLinux)
+    (.get (.submit @dispatch-executor f))
     (let [callback (DispatchCallback. f)
-          args (to-array [main-queue nil callback])]
-      (.invoke ^com.sun.jna.Function dispatch_sync void args)
+          args (to-array [])]
+      (dispatch_sync @main-queue nil callback)
       ;; please don't garbage collect me :D
       (identity args)
-      nil)
-    (.get (.submit @dispatch-executor f))))
+      nil)))
 
 
 (defonce ^:no-doc not-garbage
