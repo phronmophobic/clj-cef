@@ -44,7 +44,7 @@ int on_before_background_browser(CefExtensionHandler x0, CefExtension x1, CefStr
 
 public static interface OnBeforeBrowserFunc extends Callback {
 
-int on_before_browser(CefExtensionHandler x0, CefExtension x1, CefBrowser x2, CefBrowser x3, int x4, CefStringUtf16 x5, int x6, CefWindowInfo x7, Pointer x8, CefBrowserSettings x9); 
+int on_before_browser(CefExtensionHandler x0, CefExtension x1, CefBrowser x2, CefBrowser x3, int x4, CefStringUtf16 x5, int x6, Pointer x7, Pointer x8, CefBrowserSettings x9); 
 }
 
 public static interface GetActiveBrowserFunc extends Callback {
@@ -108,7 +108,7 @@ return  this.on_before_background_browser.on_before_background_browser(this,  x1
 
 }
 
-public int onBeforeBrowser (CefExtension x1, CefBrowser x2, CefBrowser x3, int x4, String x5, int x6, CefWindowInfo x7, Pointer x8, CefBrowserSettings x9) {
+public int onBeforeBrowser (CefExtension x1, CefBrowser x2, CefBrowser x3, int x4, String x5, int x6, Pointer x7, Pointer x8, CefBrowserSettings x9) {
 
 return  this.on_before_browser.on_before_browser(this,  x1,  x2,  x3,  x4, CljCefLib.toCefString(x5),  x6,  x7,  x8,  x9);
 

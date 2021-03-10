@@ -76,3 +76,29 @@
     nil))
 
 
+(defn copy-file-mode [from to]
+  (.setReadable to (.canRead from) true)
+  (.setWritable to (.canWrite from) true)
+  (.setExecutable to (.canExecute from) true))
+
+(defn copy-contents [from to]
+  (let [fs (.listFiles from)]
+    (doseq [f fs]
+      (cond
+        (.isFile f)
+        (let [to (io/file to (.getName f))]
+          (println "copying " (.getAbsolutePath f) "->" (.getAbsolutePath to))
+          (io/copy f to)
+          (copy-file-mode f to))
+
+
+        (.isDirectory f)
+        (let [dir-name (.getName f)]
+          (copy-contents (io/file from dir-name)
+                         (doto (io/file to dir-name)
+                           (.mkdir))))
+
+
+        :else
+        (throw (Exception. (str "Don't know how to copy file that is not .isFile or .isDirectory " f) )))))
+  )

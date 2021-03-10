@@ -3,54 +3,61 @@
   (:require [net.n01se.clojure-jna :as jna])
   (:import com.sun.jna.Pointer
            com.sun.jna.Memory
+           com.sun.jna.Platform
            com.sun.jna.ptr.FloatByReference
            com.sun.jna.ptr.IntByReference
-           com.sun.jna.IntegerType))
+           com.sun.jna.IntegerType
+           java.util.concurrent.Executors))
 
 (def ^:no-doc main-class-loader @clojure.lang.Compiler/LOADER)
 (def ^:no-doc void Void/TYPE)
 
+(declare cljcef)
+
+
 (def ^:no-doc cljcef
-  (try
-    (com.sun.jna.NativeLibrary/getInstance "cljcef")
-    (catch java.lang.UnsatisfiedLinkError e
-      nil)))
+  (delay
+    (com.sun.jna.NativeLibrary/getInstance "cljcef")))
+
+(def ^:no-doc cef
+  (delay
+    (if (Platform/isLinux)
+      (com.sun.jna.NativeLibrary/getInstance "cef")
+      @cljcef)))
+
+
+(defn test-load-cljcef []
+  ((requiring-resolve 'com.phronemophobic.cef/prepare-environment!))
+  @cljcef)
+
+(defn test-load-cef []
+  ((requiring-resolve 'com.phronemophobic.cef/prepare-environment!))
+  @cef)
 
 
 (defmacro ^:no-doc defc
-  ([fn-name ret]
-   `(defc ~fn-name ~ret []))
-  ([fn-name ret args]
-   `(defc ~fn-name cljcef ~ret ~args))
+  ([fn-name lib ret]
+   `(defc ~fn-name ~lib ~ret []))
   ([fn-name lib ret args]
    (let [cfn-sym (with-meta (gensym "cfn") {:tag 'com.sun.jna.Function})]
-     `(if ~lib
-        (let [~cfn-sym (.getFunction ~(with-meta lib {:tag 'com.sun.jna.NativeLibrary})
-                                     ~(name fn-name))]
-          (defn- ~fn-name [~@args]
-            (.invoke ~cfn-sym
-                     ~ret (to-array [~@args]))))
+     `(let [~cfn-sym (delay (.getFunction ~(with-meta `(deref ~lib) {:tag 'com.sun.jna.NativeLibrary})
+                                          ~(name fn-name)))]
         (defn- ~fn-name [~@args]
-          (throw (Exception. (str ~(name fn-name) " not loaded."))))))))
+          (.invoke (deref ~cfn-sym)
+                   ~ret (to-array [~@args])))))))
 
 
 
 (def ^:no-doc
-  objlib (try
-           (com.sun.jna.NativeLibrary/getInstance "CoreFoundation")
-           (catch UnsatisfiedLinkError e
-             nil)))
+  objlib (delay
+           (com.sun.jna.NativeLibrary/getInstance "CoreFoundation")))
 
 (def ^:no-doc
-  main-queue (when objlib
-               (.getGlobalVariableAddress ^com.sun.jna.NativeLibrary objlib "_dispatch_main_q")))
+  main-queue (delay
+               (.getGlobalVariableAddress ^com.sun.jna.NativeLibrary @objlib "_dispatch_main_q")))
 
-(def ^:no-doc
-  dispatch_sync (when objlib
-                  (.getFunction ^com.sun.jna.NativeLibrary objlib "dispatch_sync_f")))
-(def ^:no-doc
-  dispatch_async (when objlib
-                   (.getFunction ^com.sun.jna.NativeLibrary objlib "dispatch_async_f")))
+(defc dispatch_sync_f objlib void [queue context work])
+(defc dispatch_async_f  objlib void [queue context work])
 
 (defonce ^:no-doc
   callbacks (atom []))
@@ -78,29 +85,38 @@
     ;; now that we're done
     (com.sun.jna.Native/detach true)))
 
+(defonce dispatch-executor (delay
+                             (let [thread-factory
+                                   (reify
+                                     java.util.concurrent.ThreadFactory
+                                     (newThread [this r]
+                                       (let [thread (.newThread (Executors/defaultThreadFactory)
+                                                                r)]
+                                         (.setDaemon thread true)
+                                         thread)))]
+                               (Executors/newSingleThreadExecutor thread-factory))))
+
 (defn dispatch-async
   "Run `f` on the main thread. Will return immediately."
   [f]
-  (if (and main-queue dispatch_sync)
-    (let [callback (DispatchCallback. f)
-          args (to-array [main-queue nil callback])]
-      (.invoke ^com.sun.jna.Function dispatch_async void args)
+  (if (Platform/isLinux)
+    (.submit @dispatch-executor f)
+    (let [callback (DispatchCallback. f)]
+      (dispatch_async_f @main-queue nil callback)
       ;; please don't garbage collect me :D
-      (identity args)
-      nil)
-    (f)))
+      (identity callback)
+      nil)))
 
 (defn dispatch-sync
   "Run `f` on the main thread. Waits for `f` to complete before returning."
   [f]
-  (if (and main-queue dispatch_sync)
-    (let [callback (DispatchCallback. f)
-          args (to-array [main-queue nil callback])]
-      (.invoke ^com.sun.jna.Function dispatch_sync void args)
+  (if (Platform/isLinux)
+    (.get (.submit @dispatch-executor f))
+    (let [callback (DispatchCallback. f)]
+      (dispatch_sync_f @main-queue nil callback)
       ;; please don't garbage collect me :D
-      (identity args)
-      nil)
-    (f)))
+      (identity callback)
+      nil)))
 
 
 (defonce ^:no-doc not-garbage

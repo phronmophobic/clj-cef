@@ -31,8 +31,8 @@ void log(const char* s){
 #include "include/cef_sandbox_mac.h"
 #endif
 
-
-
+// don't judge me
+#include "wrap_app.cpp"
 
 extern "C"{
 
@@ -57,6 +57,7 @@ extern "C"{
         BackupSignalHandlers();
         // #endif
 
+        wrap_app(app);
 
         // Initialize CEF in the main process.
         int ret = cef_initialize(main_args, settings, app, sandbox_info);
@@ -64,6 +65,8 @@ extern "C"{
         // #if defined(OS_POSIX)
         RestoreSignalHandlers();
         // #endif
+
+        unwrap_app(app);
 
         return ret;
 

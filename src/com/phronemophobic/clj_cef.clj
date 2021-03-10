@@ -3,7 +3,9 @@
              :refer [print-doc
                      cef-string]]
             [com.phronemophobic.cinterop
+             :as cinterop
              :refer [dispatch-sync
+                     defc
                      dispatch-async]])
   (:import
    java.awt.image.BufferedImage
@@ -51,53 +53,63 @@
   (cef/download-and-prepare-environment!)
 
   (def url "https://github.com/phronmophobic/membrane")
-  (def browser-settings (cef/map->browser-settings))
+  (def browser-settings (cef/map->browser-settings
+                         ;; disable
+                         ;;{:webgl 2}
+                         ))
 
   (defonce browser (atom nil))
   (def lsh (cef/map->life-span-handler
             {:on-after-created
              (fn [this b]
+               ;; (.setContextClassLoader (Thread/currentThread) main-class-loader)
                (reset! browser b))
              :on-before-close
              (fn [this b]
+               ;; (.setContextClassLoader (Thread/currentThread) main-class-loader)
                (reset! browser nil)
                (cef/cef-quit-message-loop))}))
 
-  (defonce load-handler (cef/map->load-handler))
-  (cef/merge->load-handler
-   load-handler
-   {:on-loading-state-change
-    (fn [this browser is-loading can-go-back? can-go-forward?]
-      (.setContextClassLoader (Thread/currentThread) main-class-loader))
-    :on-load-end
-    (fn [this browser frame i]
-      (.setContextClassLoader (Thread/currentThread) main-class-loader))})
+  ;; (defonce load-handler (cef/map->load-handler))
+  ;; (cef/merge->load-handler
+  ;;  load-handler
+  ;;  {:on-loading-state-change
+  ;;   (fn [this browser is-loading can-go-back? can-go-forward?]
+  ;;     (.setContextClassLoader (Thread/currentThread) main-class-loader))
+  ;;   :on-load-end
+  ;;   (fn [this browser frame i]
+  ;;     (.setContextClassLoader (Thread/currentThread) main-class-loader))})
 
+  (defonce client (cef/map->client
+                   {:get-life-span-handler
+                    (fn [client]
+                      ;; (.setContextClassLoader (Thread/currentThread) main-class-loader)
+                      (println "getting life span handler")
+                      lsh)
+                    ;; :get-load-handler
+                    ;; (fn [client]
+                    ;;   load-handler)
+                    :get-render-handler
+                    (fn [client]
+                      (println "getting render handler")
+                      (cef/map->render-handler
+                       {
 
-  (defonce client (cef/map->client))
-  (cef/merge->client
-   client
-   {:get-life-span-handler
-    (fn [client]
-      lsh)
-    :get-load-handler
-    (fn [client]
-      load-handler)
-    :get-render-handler
-    (fn [client]
-      (cef/map->render-handler
-       {
-
-        :get-view-rect
-        (fn [handler browser rect]
-          (set! (.width rect) 800)
-          (set! (.height rect) 700))
-        :on-paint
-        (fn [handler browser type n rects buffer width height]
-          (println "painting")
-          (save-to-image! "browser.png"
-                          (rects->img type rects (.getIntArray buffer 0 (* width height)) width height)))})
-      )})
+                        :get-view-rect
+                        (fn [handler browser rect]
+                          ;; (.setContextClassLoader (Thread/currentThread) main-class-loader)
+                          (println "getting view rect")
+                          (set! (.width rect) 200)
+                          (set! (.height rect) 200))
+                        :on-paint
+                        (fn [handler browser type n rects buffer width height]
+                          ;; (.setContextClassLoader (Thread/currentThread) main-class-loader)
+                          (println "painting")
+                          ;; (.setContextClassLoader (Thread/currentThread) main-class-loader)
+                          (save-to-image! "browser.png"
+                                          (rects->img type rects (.getIntArray buffer 0 (* width height)) width height)))})
+                      )}))
+  
 
   (def window-info (cef/map->window-info
                     {:windowless-rendering-enabled 1}))
@@ -106,61 +118,40 @@
     (cef/map->browser-process-handler
      {:on-context-initialized
       (fn [bph]
-        (cef/cef-browser-host-create-browser window-info client url browser-settings nil nil))
-      :on-schedule-message-pump-work
-      (fn [this delay])}))
+        ;; (.setContextClassLoader (Thread/currentThread) main-class-loader)
+        (println "creating browser: " url)
+        (cef/cef-browser-host-create-browser window-info client url browser-settings nil nil)
+        nil)
+      ;; :on-schedule-message-pump-work
+      ;; (fn [this delay])
+      }))
 
 
-  (defonce app (cef/map->app))
-  (cef/merge->app
-   app
-   {:get-browser-process-handler
-    (fn [app]
-      bph)})
+
+  (defonce app (cef/map->app
+                {:get-browser-process-handler
+                 (fn [app]
+                   bph)}))
 
   (cef/cef-initialize app)
-
 
   ,)
 
 
-(defn work []
-  (cef/cef-do-message-loop-work))
-
-(defn clicks []
-  (dotimes [i 100]
-    (let [pos {:x (rand-int 500)
-               :y (rand-int 500)}]
-      (println "click " pos)
-      #_(.sendMouseMoveEvent (.getHost @browser)
-                             (cef/map->mouse-event
-                              pos)
-                             0)
-      (.sendMouseClickEvent (.getHost @browser)
-                            (cef/map->mouse-event
-                             pos)
-                            0
-                            (rand-nth [0 1])
-                            1))
-    (work)
-    (while (or (not @browser)
-               (pos? (.isLoading @browser)))
-      
-      (work)
-      (Thread/sleep 500))))
 
 
 
-(defn run [& args]
-  (example)
-  (cef/cef-run-message-loop)
-  #_(dispatch-sync -run2))
 
 (defn -main [& args]
   (println "starting")
   (dispatch-sync example)
-  (dispatch-async cef/cef-run-message-loop)
-  (println "waiting 10 seconds")
-  (Thread/sleep 10e3)
+  
+  (dotimes [i 100]
+    (println "pumping")
+    (dispatch-sync cef/cef-do-message-loop-work)
+    (Thread/sleep 500))
+  #_(dispatch-async cef/cef-run-message-loop)
+  ;; (println "waiting 15 seconds")
+  (Thread/sleep 30e3)
   (println "closing browser")
   (.closeBrowser (.getHost @browser) 1))

@@ -24,7 +24,7 @@ ReferenceCountImpl.track(this.getPointer());
 
 public static interface OnBeforePopupFunc extends Callback {
 
-int on_before_popup(CefLifeSpanHandler x0, CefBrowser x1, CefFrame x2, CefStringUtf16 x3, CefStringUtf16 x4, int x5, int x6, CefPopupFeatures x7, CefWindowInfo x8, Pointer x9, CefBrowserSettings x10, Pointer x11, Pointer x12); 
+int on_before_popup(CefLifeSpanHandler x0, CefBrowser x1, CefFrame x2, CefStringUtf16 x3, CefStringUtf16 x4, int x5, int x6, CefPopupFeatures x7, Pointer x8, Pointer x9, CefBrowserSettings x10, Pointer x11, Pointer x12); 
 }
 
 public static interface OnAfterCreatedFunc extends Callback {
@@ -56,7 +56,7 @@ protected List getFieldOrder() {
                                             return Arrays.asList("base", "on_before_popup", "on_after_created", "do_close", "on_before_close");
  }
 
-public int onBeforePopup (CefBrowser x1, CefFrame x2, String x3, String x4, int x5, int x6, CefPopupFeatures x7, CefWindowInfo x8, Pointer x9, CefBrowserSettings x10, Pointer x11, Pointer x12) {
+public int onBeforePopup (CefBrowser x1, CefFrame x2, String x3, String x4, int x5, int x6, CefPopupFeatures x7, Pointer x8, Pointer x9, CefBrowserSettings x10, Pointer x11, Pointer x12) {
 
 return  this.on_before_popup.on_before_popup(this,  x1,  x2, CljCefLib.toCefString(x3), CljCefLib.toCefString(x4),  x5,  x6,  x7,  x8,  x9,  x10,  x11,  x12);
 
