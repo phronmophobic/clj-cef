@@ -20,7 +20,7 @@ From <https://bitbucket.org/chromiumembedded/cef/src/master/>
 
 The purpose of clj-cef is to make all of these features available from clojure. The current priority is to expose as much cef functionality as possible. As such, the current API tries to match the underlying cef c api as closely as possible. Future versions or projects may provide more idiomatic clojure wrapping.
 
-We're typically spoiled by clojure libraries. Most libraries are made simple. They have worry free threading models. The JVM handles memory management. This is not one of those libraries. `clj-cef` is a thin wrapper around cef which has sharp edges. It also provides a huge amount of access and functionality that isn't really available otherwise. As much as possible, `clj-cef` tries to make correct code the path of least resistance while also providing as much access to the underlying functionality.
+We're typically spoiled by clojure libraries. Most libraries are made simple. They have worry free threading models. The JVM handles memory management. This is not one of those libraries. `clj-cef` is a thin wrapper around cef which has sharp edges. It also provides a huge amount of access and functionality that isn't really available otherwise. As much as possible, `clj-cef` tries to make correct code the path of least resistance while also providing as much access to the underlying functionality. If you have questions, drop by the #clj-cef channel on the clojurian's slack.
 
 Currently, clj-cef is only available on Mac OSX. If you'd like to see linux support, please vote or comment on [this issue](https://github.com/phronmophobic/clj-cef/issues/1).
 
@@ -186,6 +186,8 @@ All `com.phronemophobic.cef/map->`* and `com.phronemophobic.cef/merge->`* functi
 [Cef API docs](https://bitbucket.org/chromiumembedded/cef/src/master/)  
 [clj-cef reference docs](https://phronmophobic.github.io/clj-cef/)  
 [Examples](examples/)  
+
+ If you have questions, drop by the #clj-cef channel on the clojurian's slack.
 
 ## Scary Keychain popup
 
