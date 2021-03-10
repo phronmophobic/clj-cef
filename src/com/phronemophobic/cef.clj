@@ -386,7 +386,8 @@ will not block."
   be NULL (see cef_sandbox_win.h for details)."
 
   ([app]
-   ;; (assert (.exists (io/file default-target-dir "Chromium Embedded Framework.framework")))
+   (cef-initialize app default-target-dir))
+  ([app target-dir]
    (cef-initialize (map->main-args)
                    (map->settings
                     {:framework-dir-path (.getAbsolutePath (io/file default-target-dir "Chromium Embedded Framework.framework"))
