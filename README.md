@@ -234,6 +234,10 @@ For example:
 
 You need to pump the cef event loop with either `cef/cef-run-message-loop` or `cef/cef-do-message-loop-work`.
 
+### Why am I getting "Unable to open X display"?
+
+Cef requires an X display on linux. Use xvfb. See linux docs above and https://magpcss.org/ceforum/viewtopic.php?t=16993 for more information.
+
 ### Why not java-cef?
 
 * java-cef wraps cef which wraps the Chromium library. The c api provided by cef is fairly clojure friendly (thanks to JNA). 
