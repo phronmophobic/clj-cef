@@ -15,8 +15,6 @@
            java.nio.file.Files
            java.nio.file.attribute.FileAttribute))
 
-(cinterop/defc BackupSignalHandlers cinterop/cljcef cinterop/void [])
-
 (gen2/import-cef-classes)
 (gen2/gen-wrappers)
 (gen2/gen-docs)
@@ -315,7 +313,7 @@ will not block."
      (let [framework-file (io/file target-dir
                                    "Chromium Embedded Framework.framework")]
        (assert (.exists framework-file)
-               (str "Chromium Embedded Framework.framework not found at " "\""(.getAbsolutePath framework-file) "\"" "\nDid you run download-and-extract-framework?")))
+               (str "Chromium Embedded Framework.framework not found at " (.getAbsolutePath framework-file) "\nDid you run download-and-extract-framework?")))
      (extract-helper target-dir)
 
      (_cef_load_library
