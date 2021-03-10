@@ -62,11 +62,11 @@ extern "C"{
         // Initialize CEF in the main process.
         int ret = cef_initialize(main_args, settings, app, sandbox_info);
 
-        unwrap_app(app);
-
         // #if defined(OS_POSIX)
         RestoreSignalHandlers();
         // #endif
+
+        unwrap_app(app);
 
         return ret;
 
