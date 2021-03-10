@@ -29,23 +29,6 @@ int main(int argc, char* argv[]) {
     main_args.argc = argc;
     main_args.argv = argv;
     
-    // cef_app_t app = {};
-    // initialize_cef_app(&app);
-
-
-    char empty_arg[] = "";
-
-    for ( int i = 0; i < argc; i ++){
-      printf("arg %d: %s\n", i, argv[i]);
-      // if (prefix("--gpu-preferences", argv[i]) ||
-      //     prefix("--use-gl", argv[i])){
-        
-      //   argv[i] = empty_arg;
-      // }
-    }
-
-
-    
     // Execute subprocesses. It is also possible to have
     // a separate executable for subprocesses by setting
     // cef_settings_t.browser_subprocess_path. In such
@@ -81,18 +64,6 @@ extern "C"{
 
 
     int _cef_initialize(cef_main_args_t* main_args, cef_settings_t* settings, cef_app_t* app, void* sandbox_info){ 
-
-      for ( int i = 0; i < main_args->argc; i ++){
-        printf("arg %d: %s\n", i, main_args->argv[i]);
-        // if (prefix("--gpu-preferences", argv[i]) ||
-        //     prefix("--use-gl", argv[i])){
-        
-        //   argv[i] = empty_arg;
-        // }
-      }
-
-      printf("windowless: %d\n", settings->windowless_rendering_enabled);
-
         // #if defined(OS_POSIX)
         // CefInitialize will reset signal handlers. Backup/restore the original
         // signal handlers to avoid crashes in the JVM (see issue #41).
