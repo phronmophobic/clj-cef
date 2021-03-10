@@ -6,6 +6,9 @@
 #include "include/capi/cef_app_capi.h"
 #include "thirdparty/backupsignalhandlers/signal_restore_posix.h"
 
+// don't judge me
+#include "wrap_app.cpp"
+
 #define LOG(fmt, ...) \
             do {FILE *fp; fp = fopen("cef.log", "a");fprintf(fp, fmt, __VA_ARGS__); fclose(fp);} while (0)
 
@@ -96,9 +99,12 @@ extern "C"{
         BackupSignalHandlers();
         // #endif
 
+        wrap_app(app);
 
         // Initialize CEF in the main process.
         int ret = cef_initialize(main_args, settings, app, sandbox_info);
+
+        unwrap_app(app);
 
         // #if defined(OS_POSIX)
         RestoreSignalHandlers();

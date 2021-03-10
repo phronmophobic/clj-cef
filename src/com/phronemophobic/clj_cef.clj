@@ -141,10 +141,6 @@
 
 
 
-(defn run [& args]
-  (example)
-  (cef/cef-run-message-loop)
-  #_(dispatch-sync -run2))
 
 
 (defn -main [& args]

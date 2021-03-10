@@ -15,6 +15,8 @@
            java.nio.file.Files
            java.nio.file.attribute.FileAttribute))
 
+(cinterop/defc BackupSignalHandlers cinterop/cljcef cinterop/void [])
+
 (gen2/import-cef-classes)
 (gen2/gen-wrappers)
 (gen2/gen-docs)
