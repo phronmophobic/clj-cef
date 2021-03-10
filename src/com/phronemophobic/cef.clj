@@ -387,14 +387,14 @@ will not block."
    ;; (assert (.exists (io/file default-target-dir "Chromium Embedded Framework.framework")))
    (cef-initialize (map->main-args)
                    (map->settings
-                    {;; :framework-dir-path (.getAbsolutePath (io/file default-target-dir "Chromium Embedded Framework.framework"))
+                    {:framework-dir-path (.getAbsolutePath (io/file default-target-dir "Chromium Embedded Framework.framework"))
                      :browser-subprocess-path (.getAbsolutePath (io/file default-target-dir "ceflib Helper"))
-                     ;; :main-bundle-path (.getAbsolutePath default-target-dir)
+                     :main-bundle-path (.getAbsolutePath default-target-dir)
                      :locales-dir-path (.getAbsolutePath (io/file default-target-dir "locales"))
-                     :resources-dir-path (.getAbsolutePath (io/file default-target-dir))
+                     ;; :resources-dir-path (.getAbsolutePath (io/file default-target-dir))
                      ;; :external-message-pump 1
                      ;; :multi-threaded-message-loop 1
-                     :no-sandbox 1
+                     ;; :no-sandbox 1
                      :windowless-rendering-enabled 1
                      })
                    app
