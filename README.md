@@ -64,6 +64,14 @@ Tasks can be run on the main thread using `com.phronemophobic.cinterop/dispatch-
    (cef/prepare-environment!)))
 ```
 
+## Linux Dependencies
+
+```sh
+apt install xvfb libatk1.0-dev libatk-bridge2.0-dev libxkbcommon-dev libxcomposite-dev libxrandr-dev libgbm-dev
+```
+
+When running cef on linux without a display, use xvfb. The easiest way to use xvfb is to prefix command line commands with xvfb. See https://magpcss.org/ceforum/viewtopic.php?t=16993 for more information. 
+
 ## Memory Management
 
 All Cef* structs are automatically reference counted and managed by `clj-cef`. However, non Cef* struct data received from callbacks or provided to cef are not.
@@ -73,6 +81,8 @@ To prevent from crashing the JVM, follow these rules:
 - Make copies of any data received from cef callbacks that will outlast the callback call. 
 
 ## Usage
+
+Note:If running on linux without a display, prefix cli commands with `xvfb-run`.
 
 All the examples will use the following requires.
 
@@ -91,7 +101,7 @@ The main steps for using `clj-cef` are:
 
 ### 1. Download and extract the Chromium Embedded Framework
 
-The cef framework is about 80MB compressed (~230MB uncompressed) which makes it a poor fit including within the library jar. 
+The cef framework is about 80MB compressed (~230MB uncompressed) which makes it a poor fit including within the library jar. On linux, 300MB compressed and 1GB uncompressed.
 
 ```clojure
 ;; will download and extract cef framework to /tmp/com.phronemophobic.cef/
@@ -121,6 +131,8 @@ The cef framework is about 80MB compressed (~230MB uncompressed) which makes it 
                      (println "initialized!"))}))})]
      (cef/cef-initialize app))))
 ```
+
+If you used a custom target directory for cef, pass the target dir to `cef/cef-initialize` like so: `(cef/cef-initialize app target-dir)`.
 
 Note: clj-cef is running in the browser process (see [processes](https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage#markdown-header-processes)). A generic render process is used automatically.
 
@@ -245,11 +257,3 @@ the render process is a completely different OS process. While providing a rende
 # License
 
 Copyright 2021 Adrian Smith. clj-cef is licensed under Apache License v2.0.
-
-# Linux Stuff
-
-https://magpcss.org/ceforum/viewtopic.php?t=16993
-
-xvfb-run
-
-apt install xvfb libatk1.0-dev libatk-bridge2.0-dev libxkbcommon-dev libxcomposite-dev libxrandr-dev libgbm-dev
