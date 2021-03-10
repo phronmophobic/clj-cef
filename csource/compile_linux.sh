@@ -39,8 +39,8 @@ clang++ \
 cp libcljcef.so ../resources/extract/linux-x86-64
 cp "ceflib Helper" ../resources/extract/linux-x86-64
 
-# cp libcljcef.so /tmp/com.phronemophobic.cef/
-# cp "ceflib Helper" /tmp/com.phronemophobic.cef/
+cp libcljcef.so /tmp/com.phronemophobic.cef/
+cp "ceflib Helper" /tmp/com.phronemophobic.cef/
 
 
 echo "done"
