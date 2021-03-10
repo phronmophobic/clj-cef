@@ -225,6 +225,7 @@ will not block."
   "The Chromium Framework is about 234M (500M on linux) unzipped which doesn't belong in the clojure jar. Download and extract the framework to target-dir."
   ([target-dir]
    (let [url (clojure.java.io/as-url "https://cef-builds.spotifycdn.com/cef_binary_88.2.4%2Bgf3c4ca9%2Bchromium-88.0.4324.150_linux64_minimal.tar.bz2")
+         target-dir (.getAbsoluteFile target-dir)
          target-download (io/file target-dir "cef.tar.bz2")
 
          cef-dir (io/file target-dir "cef_binary_88.2.4+gf3c4ca9+chromium-88.0.4324.150_linux64_minimal")
@@ -269,6 +270,7 @@ will not block."
   "The Chromium Framework is about 234M unzipped which doesn't belong in the clojure jar. Download and extract the framework to target-dir."
   ([target-dir]
    (let [url (clojure.java.io/as-url "https://cef-builds.spotifycdn.com/cef_binary_88.2.4%2Bgf3c4ca9%2Bchromium-88.0.4324.150_macosx64_minimal.tar.bz2")
+         target-dir (.getAbsoluteFile target-dir)
          target-download (io/file target-dir "cef.tar.bz2")
          framework-path (io/file target-dir
                                  "cef_binary_88.2.4+gf3c4ca9+chromium-88.0.4324.150_macosx64_minimal"
