@@ -390,13 +390,10 @@ will not block."
   ([app target-dir]
    (cef-initialize (map->main-args)
                    (map->settings
-                    {:framework-dir-path (.getAbsolutePath (io/file default-target-dir "Chromium Embedded Framework.framework"))
-                     :browser-subprocess-path (.getAbsolutePath (io/file default-target-dir "ceflib Helper"))
-                     :main-bundle-path (.getAbsolutePath default-target-dir)
-                     :locales-dir-path (.getAbsolutePath (io/file default-target-dir "locales"))
-                     ;; :resources-dir-path (.getAbsolutePath (io/file default-target-dir))
-                     ;; :external-message-pump 1
-                     ;; :multi-threaded-message-loop 1
+                    {:framework-dir-path (.getAbsolutePath (io/file target-dir "Chromium Embedded Framework.framework"))
+                     :browser-subprocess-path (.getAbsolutePath (io/file target-dir "ceflib Helper"))
+                     :main-bundle-path (.getAbsolutePath target-dir)
+                     :locales-dir-path (.getAbsolutePath (io/file target-dir "locales"))
                      ;; :no-sandbox 1
                      :windowless-rendering-enabled 1
                      })
