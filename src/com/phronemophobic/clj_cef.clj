@@ -63,7 +63,6 @@
             {:on-after-created
              (fn [this b]
                ;; (.setContextClassLoader (Thread/currentThread) main-class-loader)
-               (println "craeted brwoser!")
                (reset! browser b))
              :on-before-close
              (fn [this b]

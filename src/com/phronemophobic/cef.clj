@@ -221,11 +221,8 @@ will not block."
        (.setExecutable target-path true false)))
    nil))
 
-(defn download-and-extract-framework
+(defn download-and-extract-framework-linux
   "The Chromium Framework is about 234M (500M on linux) unzipped which doesn't belong in the clojure jar. Download and extract the framework to target-dir."
-  ([]
-   (download-and-extract-framework (doto default-target-dir
-                                     (.mkdir))))
   ([target-dir]
    (let [url (clojure.java.io/as-url "https://cef-builds.spotifycdn.com/cef_binary_88.2.4%2Bgf3c4ca9%2Bchromium-88.0.4324.150_linux64_minimal.tar.bz2")
          target-download (io/file target-dir "cef.tar.bz2")
@@ -247,7 +244,7 @@ will not block."
 
        (doseq [folder ["Resources" "Release"]]
          (doseq [f (.listFiles (io/file cef-dir folder))]
-           (println "linking " (str folder "/" (.getName f))
+           #_(println "linking " (str folder "/" (.getName f))
                     (.getAbsolutePath (io/file target-dir (.getName f))))
            (try
              (Files/createSymbolicLink (.toPath (io/file target-dir (.getName f)))
@@ -268,13 +265,57 @@ will not block."
 
      nil)))
 
+(defn download-and-extract-framework-macosx
+  "The Chromium Framework is about 234M unzipped which doesn't belong in the clojure jar. Download and extract the framework to target-dir."
+  ([target-dir]
+   (let [url (clojure.java.io/as-url "https://cef-builds.spotifycdn.com/cef_binary_88.2.4%2Bgf3c4ca9%2Bchromium-88.0.4324.150_macosx64_minimal.tar.bz2")
+         target-download (io/file target-dir "cef.tar.bz2")
+         framework-path (io/file target-dir
+                                 "cef_binary_88.2.4+gf3c4ca9+chromium-88.0.4324.150_macosx64_minimal"
+                                 "Release"
+                                 "Chromium Embedded Framework.framework")
+         link-path (io/file target-dir "Chromium Embedded Framework.framework")]
+     (when-not (.exists link-path)
+       (when-not (.exists target-download)
+         ;; (println "downloading")
+         (with-open [url-stream (io/input-stream url)]
+           (io/copy url-stream target-download)))
+
+       ;; (println "extracting...")
+       (when-not (.exists framework-path)
+         (fs/untar-bz2 target-download target-dir))
+
+       ;; Files.createSymbolicLink(newLink, target);
+       (when-not (.exists link-path)
+         (Files/createSymbolicLink (.toPath link-path)
+                                   (.toPath framework-path)
+                                   (into-array FileAttribute []))))
+
+     (when (.exists target-download)
+       (.delete target-download))
+
+     nil)))
+
+(defn download-and-extract-framework
+  "The Chromium Framework is about 234M (500M on linux) unzipped which doesn't belong in the clojure jar. Download and extract the framework to target-dir."
+  ([]
+   (download-and-extract-framework (doto default-target-dir
+                                     (.mkdir))))
+  ([target-dir]
+   (if (Platform/isLinux)
+     (download-and-extract-framework-linux target-dir)
+     (download-and-extract-framework-macosx target-dir))))
+
+
+
+
 (defn prepare-environment-macosx!
   ([target-dir]
    (when-not @prepared-environment
      (let [framework-file (io/file target-dir
                                    "Chromium Embedded Framework.framework")]
        (assert (.exists framework-file)
-               (str "Chromium Embedded Framework.framework not found at " (.getAbsolutePath framework-file) "\nDid you run download-and-extract-framework?")))
+               (str "Chromium Embedded Framework.framework not found at " "\""(.getAbsolutePath framework-file) "\"" "\nDid you run download-and-extract-framework?")))
      (extract-helper target-dir)
 
      (_cef_load_library
@@ -285,19 +326,17 @@ will not block."
        ))
 
      (change_bundle_path (.getAbsolutePath (io/as-file target-dir)))
+     (BackupSignalHandlers)
      (reset! prepared-environment true)
      nil)
    ))
 
-(cinterop/defc BackupSignalHandlers cinterop/cljcef cinterop/void [])
+
 
 (defn prepare-environment-linux!
   ([target-dir]
    (let []
-     (System/setProperty "jna.debug_load" "true")
-     (println "updating library path")
-     (doseq [prop ["jna.platform.library.path"
-                   "jna.library.path"]
+     (doseq [prop ["jna.platform.library.path"]
              :let [jna-paths (some-> (System/getProperty prop)
                                      (clojure.string/split #":")
                                      (into #{}))]]

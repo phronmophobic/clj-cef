@@ -17,18 +17,12 @@
 
 (def ^:no-doc cljcef
   (delay
-    (try
-      (com.sun.jna.NativeLibrary/getInstance "cljcef")
-      (catch java.lang.UnsatisfiedLinkError e
-        (throw e)))))
+    (com.sun.jna.NativeLibrary/getInstance "cljcef")))
 
 (def ^:no-doc cef
   (delay
     (if (Platform/isLinux)
-      (try
-        (com.sun.jna.NativeLibrary/getInstance "cef")
-        (catch java.lang.UnsatisfiedLinkError e
-          (throw e)))
+      (com.sun.jna.NativeLibrary/getInstance "cef")
       @cljcef)))
 
 
@@ -56,18 +50,14 @@
 
 (def ^:no-doc
   objlib (delay
-           (try
-             (com.sun.jna.NativeLibrary/getInstance "CoreFoundation")
-             (catch UnsatisfiedLinkError e
-               nil))))
+           (com.sun.jna.NativeLibrary/getInstance "CoreFoundation")))
 
 (def ^:no-doc
   main-queue (delay
-               (when @objlib
-                 (.getGlobalVariableAddress ^com.sun.jna.NativeLibrary objlib "_dispatch_main_q"))))
+               (.getGlobalVariableAddress ^com.sun.jna.NativeLibrary @objlib "_dispatch_main_q")))
 
-(defc dispatch_sync objlib void [f])
-(defc dispatch_async objlib void [f])
+(defc dispatch_sync_f objlib void [queue context work])
+(defc dispatch_async_f  objlib void [queue context work])
 
 (defonce ^:no-doc
   callbacks (atom []))
@@ -111,11 +101,10 @@
   [f]
   (if (Platform/isLinux)
     (.submit @dispatch-executor f)
-    (let [callback (DispatchCallback. f)
-          args (to-array [])]
-      (dispatch_async @main-queue nil callback)
+    (let [callback (DispatchCallback. f)]
+      (dispatch_async_f @main-queue nil callback)
       ;; please don't garbage collect me :D
-      (identity args)
+      (identity callback)
       nil)))
 
 (defn dispatch-sync
@@ -123,11 +112,10 @@
   [f]
   (if (Platform/isLinux)
     (.get (.submit @dispatch-executor f))
-    (let [callback (DispatchCallback. f)
-          args (to-array [])]
-      (dispatch_sync @main-queue nil callback)
+    (let [callback (DispatchCallback. f)]
+      (dispatch_sync_f @main-queue nil callback)
       ;; please don't garbage collect me :D
-      (identity args)
+      (identity callback)
       nil)))
 
 
