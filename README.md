@@ -22,7 +22,7 @@ The purpose of clj-cef is to make all of these features available from clojure. 
 
 We're typically spoiled by clojure libraries. Most libraries are made simple. They have worry free threading models. The JVM handles memory management. This is not one of those libraries. `clj-cef` is a thin wrapper around cef which has sharp edges. It also provides a huge amount of access and functionality that isn't really available otherwise. As much as possible, `clj-cef` tries to make correct code the path of least resistance while also providing as much access to the underlying functionality. If you have questions, drop by the #clj-cef channel on the clojurian's slack.
 
-Currently, clj-cef is only available on Mac OSX. If you'd like to see linux support, please vote or comment on [this issue](https://github.com/phronmophobic/clj-cef/issues/1).
+Currently, clj-cef will run on Mac OSX and linux.
 
 ## Naming
 
