@@ -252,8 +252,8 @@ the render process is a completely different OS process. While providing a rende
 
 ## Easy ways to crash the JVM
 
-- Call Cef functions before preparing or initializing cef funcions
-- Calling cef function on the wrong thread
+- Call Cef functions before preparing or initializing cef
+- Calling a cef function on the wrong thread
 - Passing data to cef that may be garbage collected before it's done being used
 - Holding onto data that may be freed
 - Pay careful attention to the expected return types of callbacks.
