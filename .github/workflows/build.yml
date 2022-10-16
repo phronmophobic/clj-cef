@@ -36,12 +36,11 @@ jobs:
         with:
           # Install just one or all simultaneously
           cli: 1.10.1.693 # Clojure CLI based on tools.deps
-      - run: clojure -M:
       # - run: ./csource/check_release.sh
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: ./csource/download_skia.sh
-      - run: clojure -X com.phronemophobic.cef/compile-ceflib
+      - run: "clojure -X com.phronemophobic.cef/compile-ceflib"
       - uses: actions/upload-artifact@v2
         with:
           name: "ceflib Helper-${{platform}}-${{arch}}"
