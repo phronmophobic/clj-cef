@@ -70,7 +70,7 @@ Tasks can be run on the main thread using `com.phronemophobic.cinterop/dispatch-
 apt install xvfb libatk1.0-dev libatk-bridge2.0-dev libxkbcommon-dev libxcomposite-dev libxrandr-dev libgbm-dev
 ```
 
-When running cef on linux without a display, use xvfb. The easiest way to use xvfb is to prefix command line commands with xvfb. See https://magpcss.org/ceforum/viewtopic.php?t=16993 for more information. 
+When running cef on linux without a display, use xvfb. The easiest way to use xvfb is to prefix command line commands with `xvfb-run`. See https://magpcss.org/ceforum/viewtopic.php?t=16993 for more information. 
 
 ## Memory Management
 
@@ -252,8 +252,8 @@ the render process is a completely different OS process. While providing a rende
 
 ## Easy ways to crash the JVM
 
-- Call Cef functions before preparing or initializing cef funcions
-- Calling cef function on the wrong thread
+- Call Cef functions before preparing or initializing cef
+- Calling a cef function on the wrong thread
 - Passing data to cef that may be garbage collected before it's done being used
 - Holding onto data that may be freed
 - Pay careful attention to the expected return types of callbacks.
