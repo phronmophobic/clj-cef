@@ -35,11 +35,11 @@ jobs:
         uses: DeLaGuardo/setup-clojure@3.5
         with:
           # Install just one or all simultaneously
-          cli: 1.10.1.693 # Clojure CLI based on tools.deps
+          cli: 1.11.0.1100
       # - run: ./csource/check_release.sh
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: "./javac.sh"
+      - run: "clojure -T:build compile"
       - run: "clojure -X com.phronemophobic.cef/compile-ceflib"
       - uses: actions/upload-artifact@v2
         with:
