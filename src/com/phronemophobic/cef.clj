@@ -2,6 +2,7 @@
   "Clojure Wrappers for CEF"
   (:require [com.phronemophobic.gen2 :as gen2]
             [clojure.java.io :as io]
+            [clojure.string :as str]
             [com.phronemophobic.cinterop :as cinterop
              :refer [defc
                      preserve!
@@ -17,11 +18,52 @@
            java.nio.file.attribute.FileAttribute))
 
 
-(def cef-version {:cef "88.1.6+g4fe33a1"
-                  :chromium "88.0.4324.96"})
+
 
 (def cef-archs #{"arm64" "64" "32" "arm"} )
 (def cef-platforms #{"windows" "linux" "macos"})
+
+(defn guess-platform []
+  (let [os-name (System/getProperty "os.name")]
+    (cond
+      (= os-name "Mac OS X")
+      "macos"
+
+      (str/starts-with? os-name "Windows")
+      "windows"
+
+      (str/starts-with? os-name "Linux")
+      "linux"
+
+      :else :unknown)))
+
+(defn guess-arch []
+  (let [os-arch (System/getProperty "os.arch")]
+    (case os-arch
+      ("x86_64" "amd64")
+      "64"
+
+      ("arm64" "aarch64")
+      "arm64"
+
+      ("x86" "i386" "i486" "i586" "i686")
+      "32"
+
+      ;; ????
+      ;; "arm"
+
+      :unknown)))
+
+(def cef-platform (delay (guess-platform)))
+(def cef-arch (delay (guess-arch)))
+
+(def cef-version {:cef "88.1.6+g4fe33a1"
+                  :chromium "88.0.4324.96"})
+(def cef-build (delay
+                 (merge
+                  cef-version
+                  {:arch @cef-arch
+                   :platform @cef-platform})))
 
 
 (defn download-fname [{:keys [cef chromium arch platform]}]
