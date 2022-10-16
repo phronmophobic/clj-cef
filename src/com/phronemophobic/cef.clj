@@ -24,19 +24,7 @@
 (def cef-archs #{"arm64" "64" "32" "arm"} )
 (def cef-platforms #{"windows" "linux" "macos"})
 
-(defn guess-platform []
-  (let [os-name (System/getProperty "os.name")]
-    (cond
-      (= os-name "Mac OS X")
-      "macos"
 
-      (str/starts-with? os-name "Windows")
-      "windows"
-
-      (str/starts-with? os-name "Linux")
-      "linux"
-
-      :else :unknown)))
 
 (defn guess-arch []
   (let [os-arch (System/getProperty "os.arch")]
@@ -55,8 +43,27 @@
 
       :unknown)))
 
-(def cef-platform (delay (guess-platform)))
 (def cef-arch (delay (guess-arch)))
+
+(defn guess-platform []
+  (let [os-name (System/getProperty "os.name")]
+    (cond
+      (= os-name "Mac OS X")
+      ;; :(
+      (if (= "64" @cef-arch)
+        "macosx"
+        "macos")
+
+      (str/starts-with? os-name "Windows")
+      "windows"
+
+      (str/starts-with? os-name "Linux")
+      "linux"
+
+      :else :unknown)))
+
+(def cef-platform (delay (guess-platform)))
+
 
 (def cef-version {:cef "88.1.6+g4fe33a1"
                   :chromium "88.0.4324.96"})
