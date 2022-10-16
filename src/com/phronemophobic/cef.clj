@@ -12,8 +12,41 @@
            com.sun.jna.Memory
            com.sun.jna.Pointer
            com.sun.jna.Platform
+           java.net.URLEncoder
            java.nio.file.Files
            java.nio.file.attribute.FileAttribute))
+
+
+(def cef-version {:cef "88.1.6+g4fe33a1"
+                  :chromium "88.0.4324.96"})
+
+(def cef-archs #{"arm64" "64" "32" "arm"} )
+(def cef-platforms #{"windows" "linux" "macos"})
+
+
+(defn download-fname [{:keys [cef chromium arch platform]}]
+  (let [fname (format
+               "cef_binary_%s+chromium-%s_%s%s_minimal.tar.bz2"
+               cef chromium platform arch)]
+    fname))
+
+
+(defn download-url [{:keys [cef chromium arch platform]
+                     :as build}]
+  (let [
+        base "https://cef-builds.spotifycdn.com/"
+        url-str (format "%s%s" base (URLEncoder/encode (download-fname build) "utf-8"))]
+    (clojure.java.io/as-url url-str)))
+
+(comment
+  (download-fname (merge cef-version
+                         {:platform "macos"
+                          :arch "arm64"}))
+  (download-url (merge cef-version
+                       {:platform "macos"
+                        :arch "arm64"}))
+  
+  ,)
 
 (cinterop/defc BackupSignalHandlers cinterop/cljcef cinterop/void [])
 
