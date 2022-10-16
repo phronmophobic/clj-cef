@@ -5,23 +5,9 @@
         org.clojure/data.json {:mvn/version "1.0.0"}
         org.apache.commons/commons-compress {:mvn/version "1.20"}}
  :aliases
- {:test {:extra-paths ["test"]
-         :extra-deps {org.clojure/test.check {:mvn/version "1.1.0"}}}
-  :codox
-  {:extra-deps {codox/codox {:mvn/version "0.10.5"}}
-   :extra-paths ["script"]
-   :exec-fn gen-doc/-main}
-
-  :runner
-  {:extra-deps {com.cognitect/test-runner
-                {:git/url "https://github.com/cognitect-labs/test-runner"
-                 :sha "b6b3193fcc42659d7e46ecd1884a228993441182"}}
-   :main-opts ["-m" "cognitect.test-runner"
-               "-d" "test"]}
-  :jar {:extra-deps {seancorfield/depstar {:mvn/version "1.1.133"}}
-        :exec-fn hf.depstar/jar
-        :exec-args {:jar "clj-cef.jar"}}
-  :install {:extra-deps {slipset/deps-deploy {:mvn/version "0.1.1"}}
-            :main-opts ["-m" "deps-deploy.deps-deploy" "install" "clj-cef.jar"]}
-  :deploy {:extra-deps {slipset/deps-deploy {:mvn/version "0.1.1"}}
-           :main-opts ["-m" "deps-deploy.deps-deploy" "deploy" "clj-cef.jar"]}}}
+ {
+  :build {:deps {io.github.clojure/tools.build {:git/tag "v0.8.3" :git/sha "0d20256"}
+                 slipset/deps-deploy {:mvn/version "RELEASE"}}
+          :ns-default build}
+  
+  ,}}
