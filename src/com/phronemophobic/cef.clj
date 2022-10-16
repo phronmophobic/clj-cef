@@ -3,6 +3,7 @@
   (:require [com.phronemophobic.gen2 :as gen2]
             [clojure.java.io :as io]
             [clojure.string :as str]
+            [clojure.java.shell :as sh]
             [com.phronemophobic.cinterop :as cinterop
              :refer [defc
                      preserve!
@@ -531,3 +532,16 @@ will not block."
 ;; CEF_EXPORT int cef_post_delayed_task(cef_thread_id_t threadId,
 ;;                                      cef_task_t* task,
 ;;                                      int64 delay_ms);
+
+(defn compile-ceflib [& args]
+  (download-and-extract-framework)
+  (let [target-dir default-target-dir
+        build @cef-build
+        cef-dir-path (.getCanonicalPath (io/file target-dir (unzipped-fname build)))
+        script-path (.getCanonicalPath (io/file "csource"
+                                                "compile_macosx.sh"))
+        result (sh/sh script-path
+                      @cef-arch
+                      cef-dir-path)]
+    (println "exit code:" (:exit result))
+    (println (:out result))))
