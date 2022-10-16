@@ -72,6 +72,10 @@
                cef chromium platform arch)]
     fname))
 
+(defn unzipped-fname [{:keys [cef chromium arch platform] :as build}]
+  (let [s (download-fname build)]
+    (subs s 0 (- (count s) (count ".tar.bz2")))))
+
 
 (defn download-url [{:keys [cef chromium arch platform]
                      :as build}]
@@ -301,12 +305,13 @@ will not block."
 (defn download-and-extract-framework-linux
   "The Chromium Framework is about 234M (500M on linux) unzipped which doesn't belong in the clojure jar. Download and extract the framework to target-dir."
   ([target-dir]
-   (let [url (clojure.java.io/as-url "https://cef-builds.spotifycdn.com/cef_binary_88.2.4%2Bgf3c4ca9%2Bchromium-88.0.4324.150_linux64_minimal.tar.bz2")
+   (let [build @cef-build
+         url (download-url build)
+
          target-dir (.getAbsoluteFile target-dir)
          target-download (io/file target-dir "cef.tar.bz2")
 
-         cef-dir (io/file target-dir "cef_binary_88.2.4+gf3c4ca9+chromium-88.0.4324.150_linux64_minimal")
-
+         cef-dir (io/file target-dir (unzipped-fname build))
 
          last-copied-file (io/file target-dir "libcljcef.so")
          ]
@@ -322,8 +327,6 @@ will not block."
 
        (doseq [folder ["Resources" "Release"]]
          (doseq [f (.listFiles (io/file cef-dir folder))]
-           #_(println "linking " (str folder "/" (.getName f))
-                    (.getAbsolutePath (io/file target-dir (.getName f))))
            (try
              (Files/createSymbolicLink (.toPath (io/file target-dir (.getName f)))
                                        (.toPath f)
@@ -346,11 +349,12 @@ will not block."
 (defn download-and-extract-framework-macosx
   "The Chromium Framework is about 234M unzipped which doesn't belong in the clojure jar. Download and extract the framework to target-dir."
   ([target-dir]
-   (let [url (clojure.java.io/as-url "https://cef-builds.spotifycdn.com/cef_binary_88.2.4%2Bgf3c4ca9%2Bchromium-88.0.4324.150_macosx64_minimal.tar.bz2")
+   (let [build @cef-build
+         url (download-url build)
          target-dir (.getAbsoluteFile target-dir)
          target-download (io/file target-dir "cef.tar.bz2")
          framework-path (io/file target-dir
-                                 "cef_binary_88.2.4+gf3c4ca9+chromium-88.0.4324.150_macosx64_minimal"
+                                 (unzipped-fname build)
                                  "Release"
                                  "Chromium Embedded Framework.framework")
          link-path (io/file target-dir "Chromium Embedded Framework.framework")]
