@@ -1,0 +1,105 @@
+on:
+  workflow_dispatch:
+  # push:
+  #   branches:
+  #     - master
+  #   paths:
+  #     - .github/workflows/**
+  #     - "*.sh"
+
+# env:
+#   release: ${{ GITHUB_SHA }}
+
+jobs:
+  macos:
+    runs-on: macos-10.15
+    environment: Actions
+    strategy:
+      matrix:
+        build_type: [Release]
+        arch: [ "arm64"] # "x86_64"
+      fail-fast: false
+    env:
+      platform: macos
+      build_type: ${{ matrix.build_type }}
+      arch: ${{ matrix.arch }}
+      shared_suffix: "dylib"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin' # See 'Supported distributions' for available options
+          java-version: '11'
+      - name: Install clojure tools
+        uses: DeLaGuardo/setup-clojure@3.5
+        with:
+          # Install just one or all simultaneously
+          cli: 1.10.1.693 # Clojure CLI based on tools.deps
+      - run: clojure -M:
+      # - run: ./csource/check_release.sh
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: ./csource/download_skia.sh
+      - run: clojure -X com.phronemophobic.cef/compile-ceflib
+      - uses: actions/upload-artifact@v2
+        with:
+          name: "ceflib Helper-${{platform}}-${{arch}}"
+          path: "csource/ceflib Helper-${{platform}}-${{arch}}"
+      - uses: actions/upload-artifact@v2
+        with:
+          name: "libcljcef--${{platform}}-${{arch}}.dylib"
+          path: csource/"libcljcef--${{platform}}-${{arch}}.dylib"
+      - run: ./csource/release.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # - run: python3 ./csource/deploy_clojars.py
+      #   env:
+      #     CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
+      #     CLOJARS_PASSWORD: ${{ secrets.CLOJARS_PASSWORD }}
+
+  # linux:
+  #   runs-on: ubuntu-latest
+  #   environment: Actions
+  #   container: ubuntu:18.04
+  #   strategy:
+  #     matrix:
+  #       build_type: [Release]
+  #       arch: ["x86_64"]
+  #     fail-fast: false
+  #   env:
+  #     platform: linux
+  #     build_type: ${{ matrix.build_type }}
+  #     arch: ${{ matrix.arch }}
+  #     shared_suffix: "so"
+  #     artifact_name: libmembraneskia-${{matrix.arch}}.so
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - run: ./csource/check_release.sh
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - run: ./csource/prepare_linux.sh
+  #     - run: ./csource/download_skia.sh
+  #     - run: ./csource/compile_linux.sh
+  #     - uses: actions/upload-artifact@v2
+  #       with:
+  #         name: libmembraneskia-${{matrix.arch}}.so
+  #         path: csource/libmembraneskia-${{matrix.arch}}.so
+  #     - run: ./csource/release.sh
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Setup Java
+  #       uses: actions/setup-java@v2
+  #       with:
+  #         distribution: 'temurin' # See 'Supported distributions' for available options
+  #         java-version: '11'
+  #     - name: Install clojure tools
+  #       uses: DeLaGuardo/setup-clojure@3.5
+  #       with:
+  #         # Install just one or all simultaneously
+  #         cli: 1.10.1.693 # Clojure CLI based on tools.deps
+  #     - run: python3 ./csource/deploy_clojars.py
+  #       env:
+  #         CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
+  #         CLOJARS_PASSWORD: ${{ secrets.CLOJARS_PASSWORD }}
