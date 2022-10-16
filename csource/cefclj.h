@@ -17,12 +17,12 @@ class SimpleApp : public CefApp, public CefBrowserProcessHandler {
 
   // CefApp methods:
   virtual CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler()
-      OVERRIDE {
+      override {
     return this;
   }
 
   // CefBrowserProcessHandler methods:
-  virtual void OnContextInitialized() OVERRIDE;
+  virtual void OnContextInitialized() override;
 
  private:
   // Include the default reference counting implementation.
@@ -43,7 +43,7 @@ public:
     render_handler_t render_handler;
 
 
-    virtual CefRefPtr<CefAccessibilityHandler> GetAccessibilityHandler() OVERRIDE {
+    virtual CefRefPtr<CefAccessibilityHandler> GetAccessibilityHandler() override {
         return nullptr;
     }
 
@@ -53,7 +53,7 @@ public:
     // rectangle from GetViewRect will be used.
     ///
     /*--cef()--*/
-    virtual bool GetRootScreenRect(CefRefPtr<CefBrowser> browser, CefRect& rect) OVERRIDE {
+    virtual bool GetRootScreenRect(CefRefPtr<CefBrowser> browser, CefRect& rect) override {
         return false;
     }
 
@@ -62,7 +62,7 @@ public:
     // coordinates. This method must always provide a non-empty rectangle.
     ///
     /*--cef()--*/
-    virtual void GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) OVERRIDE;
+    virtual void GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) override;
 
     ///
     // Called to retrieve the translation from view coordinates to actual screen
@@ -73,7 +73,7 @@ public:
                                 int viewX,
                                 int viewY,
                                 int& screenX,
-                                int& screenY) OVERRIDE {
+                                int& screenY) override {
         return false;
     }
 
@@ -88,7 +88,7 @@ public:
     ///
     /*--cef()--*/
     virtual bool GetScreenInfo(CefRefPtr<CefBrowser> browser,
-                               CefScreenInfo& screen_info) OVERRIDE {
+                               CefScreenInfo& screen_info) override {
         return false;
     }
 
@@ -97,14 +97,14 @@ public:
     // should be shown if |show| is true and hidden if |show| is false.
     ///
     /*--cef()--*/
-    virtual void OnPopupShow(CefRefPtr<CefBrowser> browser, bool show) OVERRIDE {}
+    virtual void OnPopupShow(CefRefPtr<CefBrowser> browser, bool show) override {}
 
     ///
     // Called when the browser wants to move or resize the popup widget. |rect|
     // contains the new location and size in view coordinates.
     ///
     /*--cef()--*/
-    virtual void OnPopupSize(CefRefPtr<CefBrowser> browser, const CefRect& rect) OVERRIDE {
+    virtual void OnPopupSize(CefRefPtr<CefBrowser> browser, const CefRect& rect) override {
     }
 
     ///
@@ -124,7 +124,7 @@ public:
                          const RectList& dirtyRects,
                          const void* buffer,
                          int width,
-                         int height) OVERRIDE;
+                         int height) override;
 
     ///
     // Called when an element has been rendered to the shared texture handle.
@@ -139,7 +139,7 @@ public:
     virtual void OnAcceleratedPaint(CefRefPtr<CefBrowser> browser,
                                     PaintElementType type,
                                     const RectList& dirtyRects,
-                                    void* shared_handle) OVERRIDE {}
+                                    void* shared_handle) override {}
 
     ///
     // Called when the user starts dragging content in the web view. Contextual
@@ -161,7 +161,7 @@ public:
                                CefRefPtr<CefDragData> drag_data,
                                DragOperationsMask allowed_ops,
                                int x,
-                               int y) OVERRIDE {
+                               int y) override {
         return false;
     }
 
@@ -172,7 +172,7 @@ public:
     ///
     /*--cef()--*/
     virtual void UpdateDragCursor(CefRefPtr<CefBrowser> browser,
-                                  DragOperation operation) OVERRIDE {}
+                                  DragOperation operation) override {}
 
     ///
     // Called when the scroll offset has changed.
@@ -180,7 +180,7 @@ public:
     /*--cef()--*/
     virtual void OnScrollOffsetChanged(CefRefPtr<CefBrowser> browser,
                                        double x,
-                                       double y) OVERRIDE {}
+                                       double y) override {}
 
     ///
     // Called when the IME composition range has changed. |selected_range| is the
@@ -190,7 +190,7 @@ public:
     /*--cef()--*/
     virtual void OnImeCompositionRangeChanged(CefRefPtr<CefBrowser> browser,
                                               const CefRange& selected_range,
-                                              const RectList& character_bounds) OVERRIDE {}
+                                              const RectList& character_bounds) override {}
 
     ///
     // Called when text selection has changed for the specified |browser|.
@@ -200,7 +200,7 @@ public:
     /*--cef(optional_param=selected_text,optional_param=selected_range)--*/
     virtual void OnTextSelectionChanged(CefRefPtr<CefBrowser> browser,
                                         const CefString& selected_text,
-                                        const CefRange& selected_range) OVERRIDE {}
+                                        const CefRange& selected_range) override {}
 
     ///
     // Called when an on-screen keyboard should be shown or hidden for the
@@ -210,7 +210,7 @@ public:
     ///
     /*--cef()--*/
     virtual void OnVirtualKeyboardRequested(CefRefPtr<CefBrowser> browser,
-                                            TextInputMode input_mode) OVERRIDE {}
+                                            TextInputMode input_mode) override {}
 
 
 private:
@@ -233,31 +233,31 @@ class SimpleHandler : public CefClient,
     CefRefPtr<SimpleRenderHandler> renderHandler; 
 
   // CefClient methods:
-  virtual CefRefPtr<CefDisplayHandler> GetDisplayHandler() OVERRIDE {
+  virtual CefRefPtr<CefDisplayHandler> GetDisplayHandler() override {
     return this;
   }
-  virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() OVERRIDE {
+  virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override {
     return this;
   }
-  virtual CefRefPtr<CefLoadHandler> GetLoadHandler() OVERRIDE { return this; }
+  virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override { return this; }
 
-    virtual CefRefPtr<CefRenderHandler> GetRenderHandler() OVERRIDE;
+    virtual CefRefPtr<CefRenderHandler> GetRenderHandler() override;
 
   // CefDisplayHandler methods:
   virtual void OnTitleChange(CefRefPtr<CefBrowser> browser,
-                             const CefString& title) OVERRIDE;
+                             const CefString& title) override;
 
   // CefLifeSpanHandler methods:
-  virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) OVERRIDE;
-  virtual bool DoClose(CefRefPtr<CefBrowser> browser) OVERRIDE;
-  virtual void OnBeforeClose(CefRefPtr<CefBrowser> browser) OVERRIDE;
+  virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) override;
+  virtual bool DoClose(CefRefPtr<CefBrowser> browser) override;
+  virtual void OnBeforeClose(CefRefPtr<CefBrowser> browser) override;
 
   // CefLoadHandler methods:
   virtual void OnLoadError(CefRefPtr<CefBrowser> browser,
                            CefRefPtr<CefFrame> frame,
                            ErrorCode errorCode,
                            const CefString& errorText,
-                           const CefString& failedUrl) OVERRIDE;
+                           const CefString& failedUrl) override;
 
   // Request that all existing browser windows close.
   void CloseAllBrowsers(bool force_close);
