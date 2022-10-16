@@ -39,6 +39,7 @@ jobs:
       # - run: ./csource/check_release.sh
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: "./javac.sh"
       - run: "clojure -X com.phronemophobic.cef/compile-ceflib"
       - uses: actions/upload-artifact@v2
         with:
