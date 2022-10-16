@@ -43,12 +43,12 @@ jobs:
       - run: "clojure -X com.phronemophobic.cef/compile-ceflib"
       - uses: actions/upload-artifact@v2
         with:
-          name: "ceflib Helper-${{platform}}-${{arch}}"
-          path: "csource/ceflib Helper-${{platform}}-${{arch}}"
+          name: "ceflib Helper-${{env.platform}}-${{env.arch}}"
+          path: "csource/ceflib Helper-${{env.platform}}-${{env.arch}}"
       - uses: actions/upload-artifact@v2
         with:
-          name: "libcljcef--${{platform}}-${{arch}}.dylib"
-          path: csource/"libcljcef--${{platform}}-${{arch}}.dylib"
+          name: "libcljcef--${{env.platform}}-${{env.arch}}.dylib"
+          path: csource/"libcljcef--${{env.platform}}-${{env.arch}}.dylib"
       - run: ./csource/release.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
