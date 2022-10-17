@@ -40,7 +40,6 @@ jobs:
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: "clojure -T:build compile"
-      - run: "rm -rf /tmp/com.phronemophobic.cef/"
       - run: "clojure -X com.phronemophobic.cef/compile-ceflib :arch ${{env.arch}}"
       - uses: actions/upload-artifact@v2
         with:
