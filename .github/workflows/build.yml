@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         build_type: [Release]
-        arch: [ "x64"] # "arm64"
+        arch: [ "x86_64"] # "arm64"
       fail-fast: false
     env:
       platform: macos
@@ -47,7 +47,7 @@ jobs:
           path: "csource/ceflib Helper-${{env.platform}}-${{env.arch}}"
       - uses: actions/upload-artifact@v2
         with:
-          name: "libcljcef--${{env.platform}}-${{env.arch}}.dylib"
+          name: "libcljcef-${{env.platform}}-${{env.arch}}.dylib"
           path: csource/"libcljcef--${{env.platform}}-${{env.arch}}.dylib"
       # - run: ./csource/release.sh
       #   env:
