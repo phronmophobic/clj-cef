@@ -43,8 +43,8 @@ jobs:
       - run: "clojure -X com.phronemophobic.cef/compile-ceflib :arch ${{env.arch}}"
       - uses: actions/upload-artifact@v2
         with:
+          name: "build-${{env.platform}}-${{env.arch}}"
           path: "csource/build-${{env.platform}}-${{env.arch}}"
-          # name: "ceflib Helper-${{env.platform}}-${{env.arch}}"
       # - uses: actions/upload-artifact@v2
       #   with:
       #     name: "libcljcef-${{env.platform}}-${{env.arch}}.dylib"
