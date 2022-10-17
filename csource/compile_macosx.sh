@@ -37,6 +37,9 @@ CEF_DLL="$CEF_DIR/libcef_dll_wrapper/libcef_dll_wrapper.a"
 
 # ./compile_macosx.sh arm64 /tmp/com.phronemophobic.cef/cef_binary_88.1.6+g4fe33a1+chromium-88.0.4324.96_macosarm64_minimal/
 
+ls /tmp/com.phronemophobic.cef
+ls /private/tmp/com.phronemophobic.cef
+
 pushd "$CEF_DIR"
 
 cmake -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" -DPROJECT_ARCH="$ARCH" .
