@@ -24,13 +24,29 @@
 (def cef-archs #{"arm64" "64" "32" "arm"} )
 (def cef-platforms #{"windows" "linux" "macos"})
 
+(defn guess-platform []
+  (let [os-name (System/getProperty "os.name")]
+    (cond
+      (= os-name "Mac OS X")
+      "macos"
 
+      (str/starts-with? os-name "Windows")
+      "windows"
+
+      (str/starts-with? os-name "Linux")
+      "linux"
+
+      :else :unknown)))
+
+(def cef-platform (delay (guess-platform)))
 
 (defn guess-arch []
   (let [os-arch (System/getProperty "os.arch")]
     (case os-arch
       ("x86_64" "amd64")
-      "64"
+      (if (= "macos" @cef-platform)
+        "x64"
+        "64")
 
       ("arm64" "aarch64")
       "arm64"
@@ -44,26 +60,6 @@
       :unknown)))
 
 (def cef-arch (delay (guess-arch)))
-
-(defn guess-platform []
-  (let [os-name (System/getProperty "os.name")]
-    (cond
-      (= os-name "Mac OS X")
-      ;; :(
-      (if (= "64" @cef-arch)
-        "macosx"
-        "macos")
-
-      (str/starts-with? os-name "Windows")
-      "windows"
-
-      (str/starts-with? os-name "Linux")
-      "linux"
-
-      :else :unknown)))
-
-(def cef-platform (delay (guess-platform)))
-
 
 (def cef-version {:cef "88.1.6+g4fe33a1"
                   :chromium "88.0.4324.96"})
@@ -312,8 +308,9 @@ will not block."
 
 (defn download-and-extract-framework-linux
   "The Chromium Framework is about 234M (500M on linux) unzipped which doesn't belong in the clojure jar. Download and extract the framework to target-dir."
-  ([target-dir]
-   (let [build @cef-build
+  ([target-dir build]
+   (.mkdir target-dir)
+   (let [
          url (download-url build)
 
          target-dir (.getAbsoluteFile target-dir)
@@ -356,9 +353,9 @@ will not block."
 
 (defn download-and-extract-framework-macosx
   "The Chromium Framework is about 234M unzipped which doesn't belong in the clojure jar. Download and extract the framework to target-dir."
-  ([target-dir]
-   (let [build @cef-build
-         url (download-url build)
+  ([target-dir build]
+   (.mkdir target-dir)
+   (let [url (download-url build)
          target-dir (.getAbsoluteFile target-dir)
          target-download (io/file target-dir "cef.tar.bz2")
          framework-path (io/file target-dir
@@ -368,11 +365,11 @@ will not block."
          link-path (io/file target-dir "Chromium Embedded Framework.framework")]
      (when-not (.exists link-path)
        (when-not (.exists target-download)
-         ;; (println "downloading")
+         (println "downloading" url)
          (with-open [url-stream (io/input-stream url)]
            (io/copy url-stream target-download)))
 
-       ;; (println "extracting...")
+       (println "extracting...")
        (when-not (.exists framework-path)
          (fs/untar-bz2 target-download target-dir))
 
@@ -390,12 +387,15 @@ will not block."
 (defn download-and-extract-framework
   "The Chromium Framework is about 234M (500M on linux) unzipped which doesn't belong in the clojure jar. Download and extract the framework to target-dir."
   ([]
-   (download-and-extract-framework (doto default-target-dir
-                                     (.mkdir))))
+   (download-and-extract-framework default-target-dir
+                                   @cef-build))
   ([target-dir]
+   (download-and-extract-framework target-dir
+                                   @cef-build))
+  ([target-dir build]
    (if (Platform/isLinux)
-     (download-and-extract-framework-linux target-dir)
-     (download-and-extract-framework-macosx target-dir))))
+     (download-and-extract-framework-linux target-dir build)
+     (download-and-extract-framework-macosx target-dir build))))
 
 
 
@@ -540,15 +540,18 @@ will not block."
 ;;                                      cef_task_t* task,
 ;;                                      int64 delay_ms);
 
-(defn compile-ceflib [& args]
-  (download-and-extract-framework)
-  (let [target-dir default-target-dir
-        build @cef-build
-        cef-dir-path (.getCanonicalPath (io/file target-dir (unzipped-fname build)))
-        script-path (.getCanonicalPath (io/file "csource"
-                                                "compile_macosx.sh"))
-        result (sh/sh script-path
-                      @cef-arch
-                      cef-dir-path)]
-    (println "exit code:" (:exit result))
-    (println (:out result))))
+(defn compile-ceflib [{:keys [build]}]
+  (let [build (or build @cef-build)]
+    (download-and-extract-framework)
+    (let [target-dir default-target-dir
+          cef-dir-path (.getCanonicalPath (io/file target-dir (unzipped-fname build)))
+          script-path (.getCanonicalPath (io/file "csource"
+                                                  "compile_macosx.sh"))
+          arch (if (#{"x86_64" "x64" "64"} (:arch build))
+                 "x86_64"
+                 "arm64")
+          cmd [script-path arch cef-dir-path]
+          _ (prn cmd)
+          result (apply sh/sh cmd)]
+      (println "exit code:" (:exit result))
+      (println (:out result)))))

@@ -45,6 +45,7 @@ make
 popd
 
 clang++ \
+    -arch "$ARCH" \
     -I "$CEF_DIR" \
     -framework OpenGL \
     -framework Cocoa \
@@ -69,6 +70,7 @@ clang++ \
 #dylib
 
 clang++ \
+    -arch "$ARCH" \
     -I "$CEF_DIR" \
     -framework OpenGL \
     -framework Cocoa \
