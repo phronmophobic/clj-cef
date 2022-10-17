@@ -96,6 +96,7 @@
                                          thread)))]
                                (Executors/newSingleThreadExecutor thread-factory))))
 
+;; It seems likely that we could use the dispatch executor on both mac and linux.
 (defn dispatch-async
   "Run `f` on the main thread. Will return immediately."
   [f]
@@ -107,6 +108,7 @@
       (identity callback)
       nil)))
 
+;; It seems likely that we could use the dispatch executor on both mac and linux.
 (defn dispatch-sync
   "Run `f` on the main thread. Waits for `f` to complete before returning."
   [f]
