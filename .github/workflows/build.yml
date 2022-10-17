@@ -49,9 +49,9 @@ jobs:
         with:
           name: "libcljcef--${{env.platform}}-${{env.arch}}.dylib"
           path: csource/"libcljcef--${{env.platform}}-${{env.arch}}.dylib"
-      - run: ./csource/release.sh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - run: ./csource/release.sh
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # - run: python3 ./csource/deploy_clojars.py
       #   env:
