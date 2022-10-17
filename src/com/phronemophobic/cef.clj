@@ -300,7 +300,10 @@ will not block."
    (extract-helper (doto default-target-dir
                      (.mkdir))))
   ([target-dir]
-   (let [source (io/resource "darwin/ceflib Helper")
+   (let [resource-base (if (= @cef-arch "arm64")
+                         "macos-aarch64"
+                         "darwin-x86-64")
+         source (io/resource (str resource-base "/ceflib Helper"))
          target-path (io/file target-dir "ceflib Helper")]
      (when-not (.exists target-path)
        (with-open [in (io/input-stream source)
