@@ -548,10 +548,10 @@ will not block."
   (let [build @cef-build
         build (if arch
                 (assoc build :arch (guess-arch (str arch)))
-                build)]
-    (download-and-extract-framework)
-    (let [target-dir default-target-dir
-          cef-dir-path (.getCanonicalPath (io/file target-dir (unzipped-fname build)))
+                build)
+        target-dir default-target-dir]
+    (download-and-extract-framework target-dir build)
+    (let [cef-dir-path (.getCanonicalPath (io/file target-dir (unzipped-fname build)))
           script-path (.getCanonicalPath (io/file "csource"
                                                   "compile_macosx.sh"))
 
