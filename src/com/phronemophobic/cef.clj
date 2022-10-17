@@ -24,40 +24,44 @@
 (def cef-archs #{"arm64" "64" "32" "arm"} )
 (def cef-platforms #{"windows" "linux" "macos"})
 
-(defn guess-platform []
-  (let [os-name (System/getProperty "os.name")]
-    (cond
-      (= os-name "Mac OS X")
-      "macos"
+(defn guess-platform
+  ([]
+   (guess-platform (System/getProperty "os.name")))
+  ([os-name]
+   (cond
+     (= os-name "Mac OS X")
+     "macos"
 
-      (str/starts-with? os-name "Windows")
-      "windows"
+     (str/starts-with? os-name "Windows")
+     "windows"
 
-      (str/starts-with? os-name "Linux")
-      "linux"
+     (str/starts-with? os-name "Linux")
+     "linux"
 
-      :else :unknown)))
+     :else :unknown)))
 
 (def cef-platform (delay (guess-platform)))
 
-(defn guess-arch []
-  (let [os-arch (System/getProperty "os.arch")]
-    (case os-arch
-      ("x86_64" "amd64")
-      (if (= "macos" @cef-platform)
-        "x64"
-        "64")
+(defn guess-arch
+  ([]
+   (guess-arch (System/getProperty "os.arch")))
+  ([os-arch]
+   (case os-arch
+     ("x86_64" "amd64")
+     (if (= "macos" @cef-platform)
+       "x64"
+       "64")
 
-      ("arm64" "aarch64")
-      "arm64"
+     ("arm64" "aarch64")
+     "arm64"
 
-      ("x86" "i386" "i486" "i586" "i686")
-      "32"
+     ("x86" "i386" "i486" "i586" "i686")
+     "32"
 
-      ;; ????
-      ;; "arm"
+     ;; ????
+     ;; "arm"
 
-      :unknown)))
+     :unknown)))
 
 (def cef-arch (delay (guess-arch)))
 
@@ -543,7 +547,7 @@ will not block."
 (defn compile-ceflib [{:keys [arch]}]
   (let [build @cef-build
         build (if arch
-                (assoc build :arch (str arch))
+                (assoc build :arch (guess-arch (str arch)))
                 build)]
     (download-and-extract-framework)
     (let [target-dir default-target-dir
