@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         build_type: [Release]
-        arch: [ "x86_64"] # "arm64"
+        arch: [ "x86_64" "arm64"]
       fail-fast: false
     env:
       platform: macos
@@ -40,7 +40,8 @@ jobs:
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: "clojure -T:build compile"
-      - run: "clojure -X com.phronemophobic.cef/compile-ceflib"
+      - run: "rm -rf /tmp/com.phronemophobic.cef/"
+      - run: "clojure -X com.phronemophobic.cef/compile-ceflib :arch ${{env.arch}}"
       - uses: actions/upload-artifact@v2
         with:
           name: "ceflib Helper-${{env.platform}}-${{env.arch}}"

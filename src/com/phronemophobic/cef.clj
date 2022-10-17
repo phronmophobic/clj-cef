@@ -540,16 +540,20 @@ will not block."
 ;;                                      cef_task_t* task,
 ;;                                      int64 delay_ms);
 
-(defn compile-ceflib [{:keys [build]}]
-  (let [build (or build @cef-build)]
+(defn compile-ceflib [{:keys [arch]}]
+  (let [build @cef-build
+        build (if arch
+                (assoc build :arch (str arch))
+                build)]
     (download-and-extract-framework)
     (let [target-dir default-target-dir
           cef-dir-path (.getCanonicalPath (io/file target-dir (unzipped-fname build)))
           script-path (.getCanonicalPath (io/file "csource"
                                                   "compile_macosx.sh"))
+
           arch (if (#{"x86_64" "x64" "64"} (:arch build))
-                 "x86_64"
-                 "arm64")
+            "x86_64"
+            "arm64")
           cmd [script-path arch cef-dir-path]
           _ (prn cmd)
           result (apply sh/sh cmd)]
