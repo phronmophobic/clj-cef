@@ -554,4 +554,5 @@ will not block."
           _ (prn cmd)
           result (apply sh/sh cmd)]
       (println "exit code:" (:exit result))
-      (println (:out result)))))
+      (println (:out result))
+      (println (:err result)))))
