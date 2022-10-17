@@ -64,7 +64,7 @@ clang++ \
     "$CEF_DIR/Release/cef_sandbox.a" \
     -std=c++17 \
     -DHELPER \
-    -o "ceflib Helper"-"$PLATFORM"-"$ARCH" \
+    -o "ceflib Helper" \
     thirdparty/backupsignalhandlers/signal_restore_posix.cpp \
     getdir.mm \
     cefclj.cpp
@@ -88,13 +88,15 @@ clang++ \
     "$CEF_DLL" \
     -std=c++17 \
     -dynamiclib \
-    -o libcljcef-"$PLATFORM"-"$ARCH".dylib \
+    -o libcljcef.dylib \
     thirdparty/backupsignalhandlers/signal_restore_posix.cpp \
     getdir.mm \
     cefclj.cpp
 
 
-# cp libcljcef.dylib ../resources/darwin
-# cp 'ceflib Helper' ../resources/darwin
+BUILD_DIR=build-"$PLATFORM"-"$ARCH"
+mkdir -p "$BUILD_DIR"
+cp libcljcef.dylib "$BUILD_DIR"
+cp 'ceflib Helper' "$BUILD_DIR"
 
 echo 'done'
