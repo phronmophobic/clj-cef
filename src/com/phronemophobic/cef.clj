@@ -301,7 +301,7 @@ will not block."
                      (.mkdir))))
   ([target-dir]
    (let [resource-base (if (= @cef-arch "arm64")
-                         "macos-aarch64"
+                         "darwin-aarch64"
                          "darwin-x86-64")
          source (io/resource (str resource-base "/ceflib Helper"))
          target-path (io/file target-dir "ceflib Helper")]
