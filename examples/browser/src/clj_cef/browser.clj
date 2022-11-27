@@ -185,7 +185,7 @@
                    (io/as-file (str "browser.png")))))))
 
 (defn start-browser []
-  (cef/download-and-prepare-environment!)
+  (cef/prepare-environment!)
 
   (def url "https://www.google.com")
   (def browser-settings (cef/map->browser-settings))
