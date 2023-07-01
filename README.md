@@ -105,13 +105,13 @@ The cef framework is about 80MB compressed (~230MB uncompressed) which makes it 
 
 ```clojure
 ;; will download and extract cef framework to /tmp/com.phronemophobic.cef/
-(cef/dispatch-sync
+(dispatch-sync
  (fn []
    (cef/download-and-prepare-environment!)))
 
 ;; or 
 ;; provide target dir
-;; (cef/dispatch-sync
+;; (dispatch-sync
 ;;  (fn []
 ;;    (cef/download-and-prepare-environment! target-dir)))
 ```
@@ -120,7 +120,7 @@ The cef framework is about 80MB compressed (~230MB uncompressed) which makes it 
 
 
 ```clojure
-(cef/dispatch-sync
+(dispatch-sync
  (fn []
    (let [app (cef/map->app
               {:get-browser-process-handler
