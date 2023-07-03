@@ -433,8 +433,8 @@ will not block."
 
 (defn prepare-environment-linux!
   ([target-dir]
-   (let []
-     (doseq [prop ["jna.platform.library.path"]
+   (when-not @prepared-environment
+     (doseq [prop ["jna.library.path"]
              :let [jna-paths (some-> (System/getProperty prop)
                                      (clojure.string/split #":")
                                      (into #{}))]]
@@ -442,10 +442,10 @@ will not block."
          (System/setProperty prop
                              (if-let [s (System/getProperty prop)]
                                (str s ":" (.getAbsolutePath target-dir))
-                               (.getAbsolutePath target-dir))))))
-   
-   (BackupSignalHandlers)
-   (reset! prepared-environment true)))
+                               (.getAbsolutePath target-dir)))))
+     (BackupSignalHandlers)
+     (reset! prepared-environment true))
+   nil))
 
 
 (defn prepare-environment!
