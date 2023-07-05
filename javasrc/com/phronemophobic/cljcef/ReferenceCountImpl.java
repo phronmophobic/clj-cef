@@ -14,6 +14,12 @@ public class ReferenceCountImpl{
     static{
         notGarbage = new ConcurrentHashMap();
     }
+    // expected to only be called on the main thread
+    public static void releaseLoners(){
+        for ( Pointer p : notGarbage.keySet() ){
+            notGarbage.remove(p, 1);
+        }
+    }
 
     public static void track(Pointer ref){
         CefBaseRefCounted base = CefBaseRefCounted.newInstance(CefBaseRefCounted.class, ref);
