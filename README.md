@@ -67,7 +67,7 @@ Tasks can be run on the main thread using `com.phronemophobic.cinterop/dispatch-
 ## Linux Dependencies
 
 ```sh
-apt install xvfb libatk1.0-dev libatk-bridge2.0-dev libxkbcommon-dev libxcomposite-dev libxrandr-dev libgbm-dev
+apt install xvfb libatk1.0-dev libatk-bridge2.0-dev libxkbcommon-dev libxcomposite-dev libxrandr-dev libgbm-dev libxdamage-dev
 ```
 
 When running cef on linux without a display, use xvfb. The easiest way to use xvfb is to prefix command line commands with `xvfb-run`. See https://magpcss.org/ceforum/viewtopic.php?t=16993 for more information. 
