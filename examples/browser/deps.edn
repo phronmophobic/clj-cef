@@ -2,8 +2,8 @@
  :deps {org.clojure/clojure {:mvn/version "1.10.2"}
         com.phronemophobic/membrane {:mvn/version "0.9.21-beta"}
 
-        com.phronemophobic/clj-cef {:local/root "../../../clj-cef"}
-        ;; com.phronemophobic/clj-cef {:mvn/version "0.9.6"}
+        ;; com.phronemophobic/clj-cef {:local/root "../../../clj-cef"}
+        com.phronemophobic/clj-cef {:mvn/version "0.9.7"}
 
         org.jetbrains.skija/skija-macos-arm64 {:mvn/version "0.93.4"}
         org.jetbrains.skija/skija-macos-x64 {:mvn/version "0.93.4"}
